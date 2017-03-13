@@ -5,12 +5,15 @@
 #include "evpp/event_loop.h"
 #include "evpp/invoke_timer.h"
 
-namespace evpp {
+namespace evpp
+{
 EventLoop::EventLoop()
-    : create_evbase_myself_(true), pending_functor_count_(0) {
+    : create_evbase_myself_(true), pending_functor_count_(0)
+{
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
-    if (cfg) {
+    if(cfg)
+    {
         // Does not cache time to get a preciser timer
         event_config_set_flag(cfg, EVENT_BASE_FLAG_NO_CACHE_TIME);
         evbase_ = event_base_new_with_config(cfg);
@@ -23,8 +26,8 @@ EventLoop::EventLoop()
 }
 
 EventLoop::EventLoop(struct event_base* base)
-    : evbase_(base), create_evbase_myself_(false) {
-
+    : evbase_(base), create_evbase_myself_(false)
+{
     Init();
 
     // When we build an EventLoop object from an existing event_base object
@@ -33,25 +36,30 @@ EventLoop::EventLoop(struct event_base* base)
     InitEventWatcher();
 }
 
-void EventLoop::InitEventWatcher() {
+void EventLoop::InitEventWatcher()
+{
     watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
     int rc = watcher_->Init();
     assert(rc);
     rc = rc && watcher_->AsyncWait();
     assert(rc);
-    if (!rc) {
+    if(!rc)
+    {
         LOG_FATAL << "PipeEventWatcher init failed.";
     }
 }
 
-EventLoop::~EventLoop() {
-    if (!create_evbase_myself_) {
+EventLoop::~EventLoop()
+{
+    if(!create_evbase_myself_)
+    {
         assert(watcher_);
         watcher_.reset();
     }
     assert(!watcher_.get());
 
-    if (evbase_ != nullptr && create_evbase_myself_) {
+    if(evbase_ != nullptr && create_evbase_myself_)
+    {
         event_base_free(evbase_);
         evbase_ = nullptr;
     }
@@ -60,7 +68,8 @@ EventLoop::~EventLoop() {
     pending_functors_ = nullptr;
 }
 
-void EventLoop::Init() {
+void EventLoop::Init()
+{
 #ifdef H_HAVE_BOOST
     enum { kPendingFunctorCount = 1024 * 16 };
     this->pending_functors_ = new boost::lockfree::queue<Functor*>(kPendingFunctorCount);
@@ -73,7 +82,8 @@ void EventLoop::Init() {
     calling_pending_functors_ = false;
 }
 
-void EventLoop::Run() {
+void EventLoop::Run()
+{
     tid_ = std::this_thread::get_id(); // The actual thread id
 
     // Initialize it in the EventLoop thread
@@ -83,9 +93,12 @@ void EventLoop::Run() {
     running_ = true;
 
     int rc = event_base_dispatch(evbase_);
-    if (rc == 1) {
+    if(rc == 1)
+    {
         LOG_ERROR << "event_base_dispatch error: no event registered";
-    } else if (rc == -1) {
+    }
+    else if(rc == -1)
+    {
         int serrno = errno;
         LOG_ERROR << "event_base_dispatch error " << serrno << " " << strerror(serrno);
     }
@@ -97,20 +110,24 @@ void EventLoop::Run() {
 }
 
 
-void EventLoop::Stop() {
+void EventLoop::Stop()
+{
     assert(running_);
     RunInLoop(std::bind(&EventLoop::StopInLoop, this));
 }
 
-void EventLoop::StopInLoop() {
+void EventLoop::StopInLoop()
+{
     LOG_TRACE << "EventLoop is stopping now, tid=" << std::this_thread::get_id();
     assert(running_);
-    for (;;) {
+    for(;;)
+    {
         DoPendingFunctors();
 
         std::lock_guard<std::mutex> lock(mutex_);
 
-        if (pending_functors_->empty()) {
+        if(pending_functors_->empty())
+        {
             break;
         }
     }
@@ -124,45 +141,56 @@ void EventLoop::StopInLoop() {
     running_ = false;
 }
 
-void EventLoop::AfterFork() {
+void EventLoop::AfterFork()
+{
     int rc = event_reinit(evbase_);
     assert(rc == 0);
 
-    if (rc != 0) {
+    if(rc != 0)
+    {
         fprintf(stderr, "event_reinit failed!\n");
         abort();
     }
 }
 
-InvokeTimerPtr EventLoop::RunAfter(double delay_ms, const Functor& f) {
+InvokeTimerPtr EventLoop::RunAfter(double delay_ms, const Functor& f)
+{
     return RunAfter(Duration(delay_ms / 1000.0), f);
 }
 
-InvokeTimerPtr EventLoop::RunAfter(Duration delay, const Functor& f) {
+InvokeTimerPtr EventLoop::RunAfter(Duration delay, const Functor& f)
+{
     std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay, f, false);
     t->Start();
     return t;
 }
 
-evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, const Functor& f) {
+evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, const Functor& f)
+{
     std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, interval, f, true);
     t->Start();
     return t;
 }
 
-void EventLoop::RunInLoop(const Functor& functor) {
-    if (IsInLoopThread()) {
+void EventLoop::RunInLoop(const Functor& functor)
+{
+    if(IsInLoopThread())
+    {
         functor();
-    } else {
+    }
+    else
+    {
         QueueInLoop(functor);
     }
 }
 
-void EventLoop::QueueInLoop(const Functor& cb) {
+void EventLoop::QueueInLoop(const Functor& cb)
+{
     {
 #ifdef H_HAVE_BOOST
         auto f = new Functor(cb);
-        while (!pending_functors_->push(f)) {
+        while(!pending_functors_->push(f))
+        {
         }
 #else
         std::lock_guard<std::mutex> lock(mutex_);
@@ -171,17 +199,20 @@ void EventLoop::QueueInLoop(const Functor& cb) {
     }
     ++pending_functor_count_;
 
-    if (calling_pending_functors_ || !IsInLoopThread()) {
+    if(calling_pending_functors_ || !IsInLoopThread())
+    {
         watcher_->Notify();
     }
 }
 
-void EventLoop::DoPendingFunctors() {
+void EventLoop::DoPendingFunctors()
+{
     calling_pending_functors_ = true;
 
 #ifdef H_HAVE_BOOST
     Functor* f = nullptr;
-    while (pending_functors_->pop(f)) {
+    while(pending_functors_->pop(f))
+    {
         (*f)();
         delete f;
         --pending_functor_count_;
@@ -193,7 +224,8 @@ void EventLoop::DoPendingFunctors() {
         pending_functors_->swap(functors);
     }
 
-    for (size_t i = 0; i < functors.size(); ++i) {
+    for(size_t i = 0; i < functors.size(); ++i)
+    {
         functors[i]();
         --pending_functor_count_;
     }
@@ -202,7 +234,8 @@ void EventLoop::DoPendingFunctors() {
     calling_pending_functors_ = false;
 }
 
-void EventLoop::AssertInLoopThread() const {
+void EventLoop::AssertInLoopThread() const
+{
     assert(IsInLoopThread());
 }
 }

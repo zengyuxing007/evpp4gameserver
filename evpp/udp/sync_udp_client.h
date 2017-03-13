@@ -2,13 +2,17 @@
 
 #include "udp_message.h"
 
-namespace evpp {
-namespace udp {
-namespace sync {
+namespace evpp
+{
+namespace udp
+{
+namespace sync
+{
 
 // It is not asynchronous, please do not use it production.
 // The only purpose it exists is for purpose of testing UDP Server.
-class EVPP_EXPORT Client {
+class EVPP_EXPORT Client
+{
 public:
     Client();
     ~Client();
@@ -35,7 +39,8 @@ public:
     static bool Send(const MessagePtr& msg);
     static bool Send(const Message* msg);
 public:
-    int sockfd() const {
+    int sockfd() const
+    {
         return sockfd_;
     }
 private:

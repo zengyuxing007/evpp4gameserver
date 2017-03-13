@@ -6,38 +6,50 @@
 
 #include "udp_server.h"
 
-namespace evpp {
-namespace udp {
+namespace evpp
+{
+namespace udp
+{
 
-enum Status {
+enum Status
+{
     kRunning = 1,
     kPaused = 2,
     kStopping = 3,
     kStopped = 4,
 };
 
-class Server::RecvThread {
+class Server::RecvThread
+{
 public:
     RecvThread(Server* srv)
-        : fd_(INVALID_SOCKET), server_(srv), port_(-1), status_(kStopped) {
+        : fd_(INVALID_SOCKET), server_(srv), port_(-1), status_(kStopped)
+    {
     }
 
-    ~RecvThread() {
+    ~RecvThread()
+    {
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
-        if (this->thread_ && this->thread_->joinable()) {
-            try {
+        if(this->thread_ && this->thread_->joinable())
+        {
+            try
+            {
                 thread_->join();
-            } catch (const std::system_error& e) {
+            }
+            catch(const std::system_error& e)
+            {
                 LOG_ERROR << "Caught a system_error:" << e.what();
             }
         }
     }
 
-    bool Listen(int p) {
+    bool Listen(int p)
+    {
         this->port_ = p;
         this->fd_ = sock::CreateUDPServer(p);
-        if (this->fd_ < 0) {
+        if(this->fd_ < 0)
+        {
             LOG_ERROR << "listen error";
             return false;
         }
@@ -45,51 +57,62 @@ public:
         return true;
     }
 
-    bool Run() {
+    bool Run()
+    {
         this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
         return true;
     }
 
-    void Stop() {
+    void Stop()
+    {
         assert(IsRunning() || IsPaused());
         status_ = kStopping;
     }
 
-    void Pause() {
+    void Pause()
+    {
         assert(IsRunning());
         status_ = kPaused;
     }
 
-    void Continue() {
+    void Continue()
+    {
         assert(IsPaused());
         status_ = kRunning;
     }
 
-    bool IsRunning() const {
+    bool IsRunning() const
+    {
         return status_ == kRunning;
     }
 
-    bool IsStopped() const {
+    bool IsStopped() const
+    {
         return status_ == kStopped;
     }
 
-    bool IsPaused() const {
+    bool IsPaused() const
+    {
         return status_ == kPaused;
     }
 
-    void SetStatus(Status s) {
+    void SetStatus(Status s)
+    {
         status_ = s;
     }
 
-    int fd() const {
+    int fd() const
+    {
         return fd_;
     }
 
-    int port() const {
+    int port() const
+    {
         return port_;
     }
 
-    Server* server() const {
+    Server* server() const
+    {
         return server_;
     }
 private:
@@ -102,10 +125,12 @@ private:
 
 Server::Server() : recv_buf_size_(1472) {}
 
-Server::~Server() {
+Server::~Server()
+{
 }
 
-bool Server::Init(int port) {
+bool Server::Init(int port)
+{
     RecvThreadPtr t(new RecvThread(this));
     bool ret = t->Listen(port);
     assert(ret);
@@ -113,9 +138,12 @@ bool Server::Init(int port) {
     return ret;
 }
 
-bool Server::Init(const std::vector<int>& ports) {
-    for (auto it = ports.begin(); it != ports.end(); ++it) {
-        if (!Init(*it)) {
+bool Server::Init(const std::vector<int>& ports)
+{
+    for(auto it = ports.begin(); it != ports.end(); ++it)
+    {
+        if(!Init(*it))
+        {
             return false;
         }
     }
@@ -123,14 +151,17 @@ bool Server::Init(const std::vector<int>& ports) {
 }
 
 
-bool Server::Init(const std::string& listen_ports/*like "53,5353,1053"*/) {
+bool Server::Init(const std::string& listen_ports/*like "53,5353,1053"*/)
+{
     std::vector<std::string> vec;
     StringSplit(listen_ports, ",", 0, vec);
 
     std::vector<int> v;
-    for (auto& s : vec) {
+    for(auto& s : vec)
+    {
         int i = std::atoi(s.c_str());
-        if (i <= 0) {
+        if(i <= 0)
+        {
             LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
             return false;
         }
@@ -140,96 +171,126 @@ bool Server::Init(const std::string& listen_ports/*like "53,5353,1053"*/) {
     return Init(v);
 }
 
-bool Server::Start() {
-    if (!message_handler_) {
+bool Server::Start()
+{
+    if(!message_handler_)
+    {
         LOG_ERROR << "MessageHandler DO NOT set!";
         return false;
     }
-    for (auto& rt : recv_threads_) {
-        if (!rt->Run()) {
+    for(auto& rt : recv_threads_)
+    {
+        if(!rt->Run())
+        {
             return false;
         }
     }
     return true;
 }
 
-void Server::Stop(bool wait_thread_exit) {
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
+void Server::Stop(bool wait_thread_exit)
+{
+    for(auto it = recv_threads_.begin(); it != recv_threads_.end(); it++)
+    {
         (*it)->Stop();
     }
 
-    if (wait_thread_exit) {
-        while (!IsStopped()) {
+    if(wait_thread_exit)
+    {
+        while(!IsStopped())
+        {
             usleep(1);
         }
     }
 }
 
-void Server::Pause() {
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
+void Server::Pause()
+{
+    for(auto it = recv_threads_.begin(); it != recv_threads_.end(); it++)
+    {
         (*it)->Pause();
     }
 }
 
-void Server::Continue() {
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
+void Server::Continue()
+{
+    for(auto it = recv_threads_.begin(); it != recv_threads_.end(); it++)
+    {
         (*it)->Continue();
     }
 }
 
-bool Server::IsRunning() const {
+bool Server::IsRunning() const
+{
     bool rc = true;
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
+    for(auto it = recv_threads_.begin(); it != recv_threads_.end(); it++)
+    {
         rc = rc && (*it)->IsRunning();
     }
 
     return rc;
 }
 
-bool Server::IsStopped() const {
+bool Server::IsStopped() const
+{
     bool rc = true;
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
+    for(auto it = recv_threads_.begin(); it != recv_threads_.end(); it++)
+    {
         rc = rc && (*it)->IsStopped();
     }
 
     return rc;
 }
 
-void Server::RecvingLoop(RecvThread* thread) {
+void Server::RecvingLoop(RecvThread* thread)
+{
     LOG_INFO << "UDPServer is running at 0.0.0.0:" << thread->port();
     thread->SetStatus(kRunning);
-    while (true) {
-        if (thread->IsPaused()) {
+    while(true)
+    {
+        if(thread->IsPaused())
+        {
             usleep(1);
             continue;
         }
 
-        if (!thread->IsRunning()) {
+        if(!thread->IsRunning())
+        {
             break;
         }
 
         MessagePtr recv_msg(new Message(thread->fd(), recv_buf_size_));
         socklen_t addr_len = sizeof(struct sockaddr);
         int readn = ::recvfrom(thread->fd(), (char*)recv_msg->WriteBegin(), recv_buf_size_, 0, recv_msg->mutable_remote_addr(), &addr_len);
-        if (readn >= 0) {
+        if(readn >= 0)
+        {
             LOG_TRACE << "fd=" << thread->fd() << " port=" << thread->port()
                       << " recv len=" << readn << " from " << sock::ToIPPort(recv_msg->remote_addr());
 
             recv_msg->WriteBytes(readn);
-            if (tpool_) {
+            if(tpool_)
+            {
                 EventLoop* loop = nullptr;
-                if (IsRoundRobin()) {
+                if(IsRoundRobin())
+                {
                     loop = tpool_->GetNextLoop();
-                } else {
+                }
+                else
+                {
                     loop = tpool_->GetNextLoopWithHash(sock::sockaddr_in_cast(recv_msg->remote_addr())->sin_addr.s_addr);
                 }
                 loop->RunInLoop(std::bind(this->message_handler_, loop, recv_msg));
-            } else {
+            }
+            else
+            {
                 this->message_handler_(nullptr, recv_msg);
             }
-        } else {
+        }
+        else
+        {
             int eno = errno;
-            if (EVUTIL_ERR_RW_RETRIABLE(eno)) {
+            if(EVUTIL_ERR_RW_RETRIABLE(eno))
+            {
                 continue;
             }
 

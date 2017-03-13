@@ -6,19 +6,23 @@
 #include "evpp/slice.h"
 #include "evpp/any.h"
 
-namespace evpp {
+namespace evpp
+{
 
 class EventLoop;
 class FdChannel;
 class TCPClient;
 
-class EVPP_EXPORT TCPConn : public std::enable_shared_from_this<TCPConn> {
+class EVPP_EXPORT TCPConn : public std::enable_shared_from_this<TCPConn>
+{
 public:
-    enum Type {
+    enum Type
+    {
         kIncoming = 0, // The type of a TCPConn held by a TCPServer
         kOutgoing = 1, // The type of a TCPConn held by a TCPClient
     };
-    enum Status {
+    enum Status
+    {
         kDisconnected = 0,
         kConnecting = 1,
         kConnected = 2,
@@ -34,7 +38,8 @@ public:
 
     void Close();
 
-    void Send(const char* s) {
+    void Send(const char* s)
+    {
         Send(s, strlen(s));
     }
     void Send(const void* d, size_t dlen);
@@ -42,49 +47,63 @@ public:
     void Send(const Slice& message);
     void Send(Buffer* buf);
 public:
-    EventLoop* loop() const {
+    EventLoop* loop() const
+    {
         return loop_;
     }
-    void set_context(const Any& c) {
+    void set_context(const Any& c)
+    {
         context_[0] = c;
     }
-    const Any& context() const {
+    const Any& context() const
+    {
         return context_[0];
     }
-    void set_context(int index, const Any& c) {
+    void set_context(int index, const Any& c)
+    {
         assert(index < kContextCount && index >= 0);
         context_[index] = c;
     }
-    const Any& context(int index) const {
+    const Any& context(int index) const
+    {
         assert(index < kContextCount && index >= 0);
         return context_[index];
     }
     // Return the remote peer's address with form "ip:port"
-    const std::string& remote_addr() const {
+    const std::string& remote_addr() const
+    {
         return remote_addr_;
     }
-    const std::string& name() const {
+    const std::string& name() const
+    {
         return name_;
     }
-    bool IsConnected() const {
+    bool IsConnected() const
+    {
         return status_ == kConnected;
     }
-    bool IsConnecting() const {
+    bool IsConnecting() const
+    {
         return status_ == kConnecting;
     }
-    bool IsDisconnected() const {
+    bool IsDisconnected() const
+    {
         return status_ == kDisconnected;
     }
-    bool IsDisconnecting() const {
+    bool IsDisconnecting() const
+    {
         return status_ == kDisconnecting;
     }
-    Type type() const {
+    Type type() const
+    {
         return type_;
     }
-    Status status() const {
+    Status status() const
+    {
         return status_;
     }
-    void SetCloseDelayTime(Duration d) {
+    void SetCloseDelayTime(Duration d)
+    {
         assert(type_ == kIncoming);
         // This option is only available for the connection type kIncoming
         // Set the delay time to close the socket
@@ -99,21 +118,25 @@ protected:
     friend class TCPServer;
 
 
-    void set_type(Type t) {
+    void set_type(Type t)
+    {
         type_ = t;
     }
 
-    void SetMessageCallback(MessageCallback cb) {
+    void SetMessageCallback(MessageCallback cb)
+    {
         msg_fn_ = cb; // This will be called to the user layer
     }
 
-    void SetConnectionCallback(ConnectionCallback cb) {
+    void SetConnectionCallback(ConnectionCallback cb)
+    {
         conn_fn_ = cb; // This will be called to the user layer
     }
 
     void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark); // This will be called to the user layer
 
-    void SetCloseCallback(CloseCallback cb) {
+    void SetCloseCallback(CloseCallback cb)
+    {
         close_fn_ = cb; // This will be called to TCPClient or TCPServer
     }
     void OnAttachedToLoop();

@@ -4,8 +4,10 @@
 #include <chrono>
 
 
-namespace evpp {
-class Timestamp {
+namespace evpp
+{
+class Timestamp
+{
 public:
     Timestamp();
     explicit Timestamp(int64_t nanoseconds);

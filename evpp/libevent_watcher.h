@@ -1,15 +1,17 @@
 #pragma once
 
 #include "inner_pre.h"
-
 #include "duration.h"
+#include "event2/util.h"
 
 struct event;
 struct event_base;
 
-namespace evpp {
+namespace evpp
+{
 class EventLoop;
-class EVPP_EXPORT EventWatcher {
+class EVPP_EXPORT EventWatcher
+{
 public:
     typedef std::function<void()> Handler;
 
@@ -47,7 +49,8 @@ protected:
     Handler cancel_callback_;
 };
 
-class EVPP_EXPORT PipeEventWatcher : public EventWatcher {
+class EVPP_EXPORT PipeEventWatcher : public EventWatcher
+{
 public:
     PipeEventWatcher(struct event_base* event_base, const Handler& handler);
     PipeEventWatcher(EventLoop* loop, const Handler& handler);
@@ -57,12 +60,13 @@ public:
 private:
     virtual bool DoInit();
     virtual void DoClose();
-    static void HandlerFn(int fd, short which, void* v);
+    static void HandlerFn(evutil_socket_t fd, short which, void* v);
 
-    int pipe_[2]; // Write to pipe_[0] , Read from pipe_[1]
+    evutil_socket_t pipe_[2]; // Write to pipe_[0] , Read from pipe_[1]
 };
 
-class EVPP_EXPORT TimerEventWatcher : public EventWatcher {
+class EVPP_EXPORT TimerEventWatcher : public EventWatcher
+{
 public:
     TimerEventWatcher(struct event_base* event_base, const Handler& handler, Duration timeout);
     TimerEventWatcher(EventLoop* loop, const Handler& handler, Duration timeout);
@@ -71,12 +75,13 @@ public:
 
 private:
     virtual bool DoInit();
-    static void HandlerFn(int fd, short which, void* v);
+    static void HandlerFn(evutil_socket_t fd, short which, void* v);
 private:
     Duration timeout_;
 };
 
-class EVPP_EXPORT SignalEventWatcher : public EventWatcher {
+class EVPP_EXPORT SignalEventWatcher : public EventWatcher
+{
 public:
     SignalEventWatcher(int signo, struct event_base* event_base, const Handler& handler);
     SignalEventWatcher(int signo, EventLoop* loop, const Handler& handler);
@@ -84,7 +89,7 @@ public:
     bool AsyncWait();
 private:
     virtual bool DoInit();
-    static void HandlerFn(int sn, short which, void* v);
+    static void HandlerFn(evutil_socket_t sn, short which, void* v);
 
     int signo_;
 };

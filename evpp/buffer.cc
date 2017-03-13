@@ -13,13 +13,15 @@
 #include "evpp/buffer.h"
 #include "evpp/sockets.h"
 
-namespace evpp {
+namespace evpp
+{
 const char Buffer::kCRLF[] = "\r\n";
 
 const size_t Buffer::kCheapPrependSize = 8;
 const size_t Buffer::kInitialSize  = 1024;
 
-ssize_t Buffer::ReadFromFD(int fd, int* savedErrno) {
+ssize_t Buffer::ReadFromFD(int fd, int* savedErrno)
+{
     // saved an ioctl()/FIONREAD call to tell how much to read
     char extrabuf[65536];
     struct iovec vec[2];
@@ -33,11 +35,16 @@ ssize_t Buffer::ReadFromFD(int fd, int* savedErrno) {
     const int iovcnt = (writable < sizeof extrabuf) ? 2 : 1;
     const ssize_t n = ::readv(fd, vec, iovcnt);
 
-    if (n < 0) {
+    if(n < 0)
+    {
         *savedErrno = errno;
-    } else if (static_cast<size_t>(n) <= writable) {
+    }
+    else if(static_cast<size_t>(n) <= writable)
+    {
         write_index_ += n;
-    } else {
+    }
+    else
+    {
         write_index_ = capacity_;
         Append(extrabuf, n - writable);
     }

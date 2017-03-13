@@ -8,10 +8,12 @@
 
 #include <map>
 
-namespace evpp {
+namespace evpp
+{
 class Listener;
 
-class EVPP_EXPORT TCPServer : public ThreadDispatchPolicy {
+class EVPP_EXPORT TCPServer : public ThreadDispatchPolicy
+{
 public:
     TCPServer(EventLoop* loop,
               const std::string& listen_addr/*ip:port*/,
@@ -28,17 +30,20 @@ public:
     // When these two events happened, the value of the parameter in the callback is:
     //      1. Received a new connection : TCPConn::IsConnected() == true
     //      2. An exist connection broken down : TCPConn::IsDisconnecting() == true
-    void SetConnectionCallback(const ConnectionCallback& cb) {
+    void SetConnectionCallback(const ConnectionCallback& cb)
+    {
         conn_fn_ = cb;
     }
 
-    void SetMessageCallback(MessageCallback cb) {
+    void SetMessageCallback(MessageCallback cb)
+    {
         msg_fn_ = cb;
     }
 
     bool IsRunning() const;
     bool IsStopped() const;
-    const std::string& listen_addr() const {
+    const std::string& listen_addr() const
+    {
         return listen_addr_;
     }
 private:

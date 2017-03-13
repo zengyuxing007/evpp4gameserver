@@ -8,16 +8,20 @@
 
 struct evhttp_request;
 
-namespace evpp {
+namespace evpp
+{
 class EventLoop;
 }
 
-namespace evpp {
-namespace http {
+namespace evpp
+{
+namespace http
+{
 
 class Service;
 
-struct EVPP_EXPORT Context {
+struct EVPP_EXPORT Context
+{
 public:
     Context(struct evhttp_request* r);
     ~Context();
@@ -36,19 +40,23 @@ public:
     // could not be found.
     const char* FindRequestHeader(const char* key);
 
-    const  std::string& uri() const {
+    const  std::string& uri() const
+    {
         return uri_;
     }
 
-    const std::string& remote_ip() const {
+    const std::string& remote_ip() const
+    {
         return remote_ip_;
     }
 
-    const Slice& body() const {
+    const Slice& body() const
+    {
         return body_;
     }
 
-    struct evhttp_request* req() const {
+    struct evhttp_request* req() const
+    {
         return req_;
     }
 

@@ -4,7 +4,8 @@
 
 #include "evpp/timestamp.h"
 
-namespace evpp {
+namespace evpp
+{
 class Buffer;
 class TCPConn;
 
@@ -21,7 +22,8 @@ typedef std::function<void(const TCPConnPtr&, size_t)> HighWaterMarkCallback;
 
 typedef std::function<void(const TCPConnPtr&, Buffer*, Timestamp)> MessageCallback;
 
-namespace internal {
+namespace internal
+{
 inline void DefaultConnectionCallback(const TCPConnPtr&) {}
 inline void DefaultMessageCallback(const TCPConnPtr&, Buffer*, Timestamp) {}
 }

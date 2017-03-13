@@ -5,14 +5,17 @@
 
 struct evhttp;
 struct evhttp_bound_socket;
-namespace evpp {
+namespace evpp
+{
 class EventLoop;
 class PipeEventWatcher;
-namespace http {
+namespace http
+{
 
 // A service does not run itself, it must be attached into a EventLoop
 // So we can embed this Service to the existing EventLoop
-class EVPP_EXPORT Service {
+class EVPP_EXPORT Service
+{
 public:
     Service(EventLoop* loop);
     ~Service();
@@ -28,7 +31,8 @@ public:
 
     void RegisterDefaultHandler(HTTPRequestCallback callback);
 
-    EventLoop* event_loop() const {
+    EventLoop* event_loop() const
+    {
         return listen_loop_;
     }
 private:

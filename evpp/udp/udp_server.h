@@ -7,14 +7,17 @@
 
 #include <thread>
 
-namespace evpp {
+namespace evpp
+{
 
 class EventLoopThreadPool;
 class EventLoop;
 
-namespace udp {
+namespace udp
+{
 
-class EVPP_EXPORT Server : public ThreadDispatchPolicy {
+class EVPP_EXPORT Server : public ThreadDispatchPolicy
+{
 public:
     typedef std::function<void(EventLoop*, MessagePtr& msg)> MessageHandler;
 public:
@@ -33,15 +36,18 @@ public:
     bool IsRunning() const;
     bool IsStopped() const;
 
-    void SetMessageHandler(MessageHandler handler) {
+    void SetMessageHandler(MessageHandler handler)
+    {
         message_handler_ = handler;
     }
 
-    void SetEventLoopThreadPool(const std::shared_ptr<EventLoopThreadPool>& pool) {
+    void SetEventLoopThreadPool(const std::shared_ptr<EventLoopThreadPool>& pool)
+    {
         tpool_ = pool;
     }
 
-    void set_recv_buf_size(size_t v) {
+    void set_recv_buf_size(size_t v)
+    {
         recv_buf_size_ = v;
     }
 

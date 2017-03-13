@@ -8,11 +8,14 @@
 #include "evpp/duration.h"
 #include "evpp/event_loop.h"
 
-namespace evpp {
-namespace httpc {
+namespace evpp
+{
+namespace httpc
+{
 class Conn;
 typedef std::shared_ptr<Conn> ConnPtr;
-class EVPP_EXPORT ConnPool {
+class EVPP_EXPORT ConnPool
+{
 public:
     ConnPool(const std::string& host, int port, Duration timeout, size_t max_pool_size = 1024);
     ~ConnPool();
@@ -23,13 +26,16 @@ public:
     // To make sure all Conn are released in it's own EventLoop
     void Clear();
 
-    const std::string& host() const {
+    const std::string& host() const
+    {
         return host_;
     }
-    int port() const {
+    int port() const
+    {
         return port_;
     }
-    Duration timeout() const {
+    Duration timeout() const
+    {
         return timeout_;
     }
 private:

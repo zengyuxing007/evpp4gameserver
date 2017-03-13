@@ -11,15 +11,15 @@
 #include "evpp/any.h"
 #include "evpp/invoke_timer.h"
 
-
 #ifdef H_HAVE_BOOST
 #include <boost/lockfree/queue.hpp>
 #endif
 
+namespace evpp
+{
 
-namespace evpp {
-
-class EVPP_EXPORT EventLoop {
+class EVPP_EXPORT EventLoop
+{
 public:
     typedef std::function<void()> Functor;
 public:
@@ -44,40 +44,51 @@ public:
     void RunInLoop(const Functor& handler);
     void QueueInLoop(const Functor& handler);
 
-    struct event_base* event_base() {
+    struct event_base* event_base()
+    {
         return evbase_;
     }
-    bool IsInLoopThread() const {
+    bool IsInLoopThread() const
+    {
         return tid_ == std::this_thread::get_id();
     }
     void AssertInLoopThread() const;
-    void set_context(const Any& c) {
+    void set_context(const Any& c)
+    {
         context_[0] = c;
     }
-    const Any& context() const {
+    const Any& context() const
+    {
         return context_[0];
     }
-    void set_context(int index, const Any& c) {
+    void set_context(int index, const Any& c)
+    {
         assert(index < kContextCount && index >= 0);
         context_[index] = c;
     }
-    const Any& context(int index) const {
+    const Any& context(int index) const
+    {
         assert(index < kContextCount && index >= 0);
         return context_[index];
     }
-    bool running() const {
+    bool running() const
+    {
         return running_;
     }
-    bool IsRunning() const {
+    bool IsRunning() const
+    {
         return running();
     }
-    bool IsStopped() const {
+    bool IsStopped() const
+    {
         return !running();
     }
-    int pending_functor_count() const {
+    int pending_functor_count() const
+    {
         return pending_functor_count_.load();
     }
-    const std::thread::id& tid() const {
+    const std::thread::id& tid() const
+    {
         return tid_;
     }
 private:

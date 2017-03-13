@@ -37,9 +37,6 @@
     <ClCompile Include="..\evpp\inner_pre.cc">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\evpp\libevent_compact.cc">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\evpp\fd_channel.cc">
       <Filter>tcp</Filter>
     </ClCompile>

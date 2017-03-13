@@ -3,8 +3,8 @@
 #include "evpp/platform_config.h"
 
 #ifdef __cplusplus
-#define GOOGLE_GLOG_DLL_DECL           // 使用静态glog库时，必须定义这个
-#define GLOG_NO_ABBREVIATED_SEVERITIES // 没这个编译会出错,传说因为和Windows.h冲突
+#define GOOGLE_GLOG_DLL_DECL           //使用静态glog库时，必须定义这个
+#define GLOG_NO_ABBREVIATED_SEVERITIES //没这个编译会出错,传说因为和Windows.h冲突
 
 #include <glog/logging.h>
 
@@ -24,11 +24,4 @@
 #define LOG_FATAL std::cout << __FILE__ << ":" << __LINE__
 #define CHECK_NOTnullptr(val) LOG_ERROR << "'" #val "' Must be non nullptr";
 #endif
-#endif // end of define __cplusplus
-
-//#ifdef _DEBUG
-//#ifdef assert
-//#undef assert
-//#endif
-//#define assert(expr)  { if (!(expr)) { LOG_FATAL << #expr ;} }
-//#endif
+#endif //!__cplusplus

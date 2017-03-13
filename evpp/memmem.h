@@ -36,7 +36,8 @@ inline void*
 memmem(const void* haystack,
        size_t haystack_len,
        const void* needle,
-       size_t needle_len) {
+       size_t needle_len)
+{
     /* not really Rabin-Karp, just using additive hashing */
     char* haystack_ = (char*)haystack;
     char* needle_ = (char*)needle;
@@ -45,16 +46,19 @@ memmem(const void* haystack,
     char* last;
     size_t i;
 
-    if (haystack_len < needle_len) {
+    if(haystack_len < needle_len)
+    {
         return nullptr;
     }
 
-    if (!needle_len) {
+    if(!needle_len)
+    {
         return haystack_;
     }
 
     /* initialize hashes */
-    for (i = needle_len; i; --i) {
+    for(i = needle_len; i; --i)
+    {
         hash += *needle_++;
         hay_hash += *haystack_++;
     }
@@ -63,10 +67,12 @@ memmem(const void* haystack,
     haystack_ = (char*)haystack;
     needle_ = (char*)needle;
     last = haystack_ + (haystack_len - needle_len + 1);
-    for (; haystack_ < last; ++haystack_) {
-        if (__builtin_expect(hash == hay_hash, 0) &&
+    for(; haystack_ < last; ++haystack_)
+    {
+        if(__builtin_expect(hash == hay_hash, 0) &&
                 *haystack_ == *needle_ &&   /* prevent calling memcmp, was a optimization from existing glibc */
-                !memcmp(haystack_, needle_, needle_len)) {
+                !memcmp(haystack_, needle_, needle_len))
+        {
             return haystack_;
         }
 
