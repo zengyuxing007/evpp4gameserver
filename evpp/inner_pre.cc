@@ -11,12 +11,9 @@
 #pragma comment(lib,"libglog_static.lib")
 #endif
 
-
 #ifndef H_OS_WINDOWS
 #include <signal.h>
 #endif
-
-
 
 #include <map>
 #include <thread>

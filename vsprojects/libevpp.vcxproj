@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\evpp\buffer.cc" />
     <ClCompile Include="..\evpp\connector.cc" />
     <ClCompile Include="..\evpp\dns_resolver.cc" />
     <ClCompile Include="..\evpp\duration.cc" />

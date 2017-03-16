@@ -23,7 +23,7 @@ public:
         client_.SetConnectionCallback(
             std::bind(&Session::OnConnection, this, std::placeholders::_1));
         client_.SetMessageCallback(
-            std::bind(&Session::OnMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            std::bind(&Session::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
     }
 
     void Start()
@@ -49,7 +49,7 @@ public:
 private:
     void OnConnection(const evpp::TCPConnPtr& conn);
 
-    void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp)
+    void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf)
     {
         LOG_TRACE << "bytes_read=" << bytes_read_ << " bytes_writen=" << bytes_written_;
         ++messages_read_;

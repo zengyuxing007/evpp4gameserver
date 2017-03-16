@@ -12,41 +12,49 @@
 
 #include <thread>
 
-namespace {
+namespace
+{
 static std::shared_ptr<evpp::TCPServer> tsrv;
 static std::atomic<int> connected_count(0);
 static std::atomic<int> message_recved_count(0);
 const static std::string addr = "127.0.0.1:19099";
 static void OnMessage(const evpp::TCPConnPtr& conn,
-                      evpp::Buffer* msg,
-                      evpp::Timestamp ts) {
+                      evpp::Buffer* msg)
+{
     message_recved_count++;
 }
 
-void OnClientConnection(const evpp::TCPConnPtr& conn) {
-    if (conn->IsConnected()) {
+void OnClientConnection(const evpp::TCPConnPtr& conn)
+{
+    if(conn->IsConnected())
+    {
         conn->Send("hello");
         LOG_INFO << "Send a message to server when connected.";
         connected_count++;
-    } else {
+    }
+    else
+    {
         LOG_INFO << "Disconnected from " << conn->remote_addr();
     }
 }
 
-evpp::TCPClient* StartTCPClient(evpp::EventLoop* loop) {
+evpp::TCPClient* StartTCPClient(evpp::EventLoop* loop)
+{
     evpp::TCPClient* client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
     client->SetConnectionCallback(&OnClientConnection);
     client->Connect();
     return client;
 }
 
-void DeleteTCPClient(evpp::TCPClient* client) {
+void DeleteTCPClient(evpp::TCPClient* client)
+{
     delete client;
 }
 }
 
 
-TEST_UNIT(testTCPClientReconnect) {
+TEST_UNIT(testTCPClientReconnect)
+{
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
     tcp_client_thread->SetName("TCPClientThread");
     tcp_client_thread->Start(true);
@@ -57,7 +65,8 @@ TEST_UNIT(testTCPClientReconnect) {
     client->set_reconnect_interval(evpp::Duration(0.1));
 
     int test_count = 2;
-    for (int i = 0; i < test_count; i++) {
+    for(int i = 0; i < test_count; i++)
+    {
         tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", 1)); //TODO FIXME 修改为0个线程，会出现map/vector iterator崩溃
         tsrv->SetMessageCallback(&OnMessage);
         tsrv->Init()&& tsrv->Start();

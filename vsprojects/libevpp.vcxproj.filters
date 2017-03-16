@@ -58,9 +58,6 @@
     <ClCompile Include="..\evpp\invoke_timer.cc">
       <Filter>evloop</Filter>
     </ClCompile>
-    <ClCompile Include="..\evpp\buffer.cc">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\evpp\libevent_watcher.cc">
       <Filter>evloop</Filter>
     </ClCompile>
@@ -171,9 +168,6 @@
     <ClInclude Include="..\evpp\any.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\evpp\buffer.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\evpp\slice.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -241,6 +235,9 @@
       <Filter>udp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\thread_dispatch_policy.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\buffer.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
