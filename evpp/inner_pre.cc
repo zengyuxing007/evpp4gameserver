@@ -8,7 +8,11 @@
 #pragma comment(lib, "libevent_extras.lib")
 #endif
 #pragma comment(lib,"Ws2_32.lib")
-#pragma comment(lib,"libglog_static.lib")
+#ifdef H_DEBUG_MODE
+#pragma comment(lib, "libglog_static_d")
+#else
+#pragma comment(lib, "libglog_static")
+#endif
 #endif
 
 #ifndef H_OS_WINDOWS
