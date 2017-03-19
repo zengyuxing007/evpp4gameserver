@@ -40,6 +40,10 @@ void FdChannel::Close()
         delete(event_);
         event_ = nullptr;
     }
+
+    read_fn_ = ReadEventCallback();
+    write_fn_ = EventCallback();
+    close_fn_ = EventCallback();
 }
 
 void FdChannel::AttachToLoop()

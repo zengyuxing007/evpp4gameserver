@@ -10,7 +10,7 @@ namespace evpp
 {
 class EventLoop;
 class TimerEventWatcher;
-class EVPP_EXPORT DNSResolver
+class EVPP_EXPORT DNSResolver : public std::enable_shared_from_this<DNSResolver>
 {
 public:
     typedef std::function<void(const std::vector<struct in_addr>& addrs)> Functor;
@@ -23,13 +23,13 @@ public:
         return host_;
     }
 private:
-    void StartInLoop();
     void SyncDNSResolve();
     void AsyncDNSResolve();
     void AsyncWait();
     void OnTimeout();
     void OnCanceled();
     void OnResolved(int errcode, struct addrinfo* addr);
+    void ClearTimer();
     static void OnResolved(int errcode, struct addrinfo* addr, void* arg);
 private:
     EventLoop* loop_;
@@ -39,6 +39,6 @@ private:
     Duration timeout_;
     Functor functor_;
     std::unique_ptr<TimerEventWatcher> timer_;
-    std::vector <struct in_addr> addrs_;
+    std::vector<struct in_addr> addrs_;
 };
 }

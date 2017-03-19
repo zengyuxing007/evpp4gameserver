@@ -12,38 +12,30 @@
 
 #include <thread>
 
-namespace
-{
+namespace {
 static bool connected = false;
 static bool message_recved = false;
 const static std::string addr = "127.0.0.1:19099";
 static void OnMessage(const evpp::TCPConnPtr& conn,
-                      evpp::Buffer* msg)
-{
+                      evpp::Buffer* msg) {
     message_recved = true;
 }
 
-static void StopTCPServer(evpp::TCPServer* t)
-{
+static void StopTCPServer(evpp::TCPServer* t) {
     t->Stop();
 }
 
-void OnClientConnection(const evpp::TCPConnPtr& conn)
-{
-    if(conn->IsConnected())
-    {
+void OnClientConnection(const evpp::TCPConnPtr& conn) {
+    if (conn->IsConnected()) {
         conn->Send("hello");
         LOG_INFO << "Send a message to server when connected.";
         connected = true;
-    }
-    else
-    {
+    } else {
         LOG_INFO << "Disconnected from " << conn->remote_addr();
     }
 }
 
-std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop)
-{
+std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
     std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
     client->set_reconnect_interval(evpp::Duration(0.01));
     client->SetConnectionCallback(&OnClientConnection);
@@ -54,8 +46,7 @@ std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop)
 }
 
 
-TEST_UNIT(testTCPServer1)
-{
+TEST_UNIT(testTCPServer1) {
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
     tcp_client_thread->SetName("TCPClientThread");
     tcp_client_thread->Start();
@@ -78,8 +69,7 @@ TEST_UNIT(testTCPServer1)
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
-TEST_UNIT(testTCPServerSilenceShutdown)
-{
+TEST_UNIT(testTCPServerSilenceShutdown) {
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
     tsrv->Init()&& tsrv->Start();

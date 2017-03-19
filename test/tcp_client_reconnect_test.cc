@@ -1,4 +1,4 @@
-#include "test_common.h"
+ï»¿#include "test_common.h"
 
 #include <evpp/exp.h>
 #include <evpp/libevent_headers.h>
@@ -52,7 +52,6 @@ void DeleteTCPClient(evpp::TCPClient* client)
 }
 }
 
-
 TEST_UNIT(testTCPClientReconnect)
 {
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
@@ -67,7 +66,7 @@ TEST_UNIT(testTCPClientReconnect)
     int test_count = 2;
     for(int i = 0; i < test_count; i++)
     {
-        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", 1)); //TODO FIXME ÐÞ¸ÄÎª0¸öÏß³Ì£¬»á³öÏÖmap/vector iterator±ÀÀ£
+        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", 1)); //TODO FIXME ï¿½Þ¸ï¿½Îª0ï¿½ï¿½ï¿½ß³Ì£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½map/vector iteratorï¿½ï¿½ï¿½ï¿½
         tsrv->SetMessageCallback(&OnMessage);
         tsrv->Init()&& tsrv->Start();
         usleep(evpp::Duration(2.0).Microseconds());
@@ -93,4 +92,43 @@ TEST_UNIT(testTCPClientReconnect)
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
+TEST_UNIT(testTCPClientConnectFailed)
+{
+    std::shared_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
+    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), addr, "TCPPingPongClient"));
+    client->SetConnectionCallback([ &loop, &client ](const evpp::TCPConnPtr & conn)
+    {
+        H_TEST_ASSERT(!conn->IsConnected());
+        client->Disconnect();
+        loop->Stop();
+    });
+    client->set_auto_reconnect(false);
+    client->Connect();
+    loop->Run();
+    client.reset();
+    loop.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
 
+TEST_UNIT(testTCPClientDisconnectImmediately)
+{
+    std::shared_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
+    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), "cmake.org:80", "TCPPingPongClient"));
+    client->SetConnectionCallback([loop, client](const evpp::TCPConnPtr & conn)
+    {
+        H_TEST_ASSERT(!conn->IsConnected());
+        H_TEST_ASSERT(!loop->IsRunning());
+        auto f = [loop]()
+        {
+            loop->Stop();
+        };
+        loop->RunAfter(300.0, f);
+    });
+    client->set_auto_reconnect(false);
+    client->Connect();
+    client->Disconnect();
+    loop->Run();
+    client.reset();
+    loop.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}

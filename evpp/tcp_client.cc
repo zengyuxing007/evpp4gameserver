@@ -25,7 +25,11 @@ TCPClient::~TCPClient()
     assert(!connector_.get());
     auto_reconnect_.store(false);
     TCPConnPtr c = conn();
-    assert(c->IsDisconnected());
+    if(c)
+    {
+        assert(c->IsDisconnected());
+    }
+
     conn_.reset();
 }
 

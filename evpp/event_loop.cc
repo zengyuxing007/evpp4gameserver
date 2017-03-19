@@ -200,6 +200,7 @@ void EventLoop::QueueInLoop(const Functor& cb)
     if(!notified_.load())
     {
         watcher_->Notify();
+        notified_.store(true);
     }
 }
 
