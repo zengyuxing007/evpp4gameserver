@@ -48,7 +48,7 @@ evpp
 
 # 快速开始
 
-请见 [Quick Start](quick_start.md)
+请见 [Quick Start](docs/quick_start.md)
 
 
 # Benchmark
