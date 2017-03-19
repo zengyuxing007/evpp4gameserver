@@ -1,5 +1,9 @@
-evpp
+evpp 
 ---
+
+
+<a href="https://github.com/Qihoo360/evpp/releases"><img src="https://img.shields.io/github/release/Qihoo360/evpp.svg" alt="Github release"></a>
+<a href="https://travis-ci.org/Qihoo360/evpp"><img src="https://travis-ci.org/Qihoo360/evpp.svg?branch=master" alt="Build status"></a>
 
 # Introduction  [中文](readme_cn.md)
 
@@ -41,7 +45,7 @@ As described above, there are not many options to choose from. So we developed o
 4. We simply use a string with the format of `"ip:port"` to represent a network address. This is referenced to the design of [Golang].
 5. `httpc::ConnPool` : This is HTTP client connection pool with highly performance. In the future we can add more features to this class : load balance and failover.
 
-In addition, in the implematations we pay seriously attations to thread-safe problems. An event-related resource must be initialized and released in its own `EventLoop` thread, so that we can minimize the possibility of thread-safe error. In order to achieve this goal we reimplemented `event_add` and` event_del` and other functions. Each call to `event_add`, we stored the resource into thread local storage, and in the call `event_del`, we checked it whether it is stored in the thread local storage. And then we checked all the threads local storages to see whether there are resources not destructively released when the process was exiting. The detail codes are here [https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87](https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87). We are so harshly pursuit the thread safety to make a program can quietly exit or reload, because we have a deep understanding of the "developing a system to run forever and developing a system to quietly exit after running a period of time are totally two diffent things".
+In addition, in the implematations we pay seriously attations to thread-safe problems. An event-related resource must be initialized and released in its own `EventLoop` thread, so that we can minimize the possibility of thread-safe error. In order to achieve this goal we reimplemented `event_add` and` event_del` and other functions. Each call to `event_add`, we stored the resource into thread local storage, and in the call `event_del`, we checked it whether it is stored in the thread local storage. And then we checked all the threads local storages to see whether there are resources not destructively released when the process was exiting. The detail codes are here [https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87](https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87). We are so harshly pursuit the thread safety to make a program can quietly exit or reload, because we have a deep understanding of "developing a system to run forever and developing a system to quietly exit after running a period of time are totally two diffent things".
 
 
 # Getting Started
@@ -50,31 +54,27 @@ Please see [Quick Start](docs/quick_start.md)
 
 # Benchmark
 
+### Benchmark Reports
+
+[The IO Event performance benchmark against Boost.Asio](docs/benchmark_ioevent_performance_vs_asio.md) : [evpp] is higher than [asio] about **20%~50%** in this case
+
+[The ping-pong benchmark against Boost.Asio](docs/benchmark_ping_pong_spend_time_vs_asio.md) : [evpp] is higher than [asio] about **5%~20%** in this case
+
+[The throughput benchmark against libevent2](docs/benchmark_throughput_vs_libevent.md) : [evpp] is higher than [libevent] about **17%~130%** in this case 
+
+[The throughput benchmark against Boost.Asio](docs/benchmark_throughput_vs_asio.md) : [evpp] and [asio] have the similar performance in this case
+
+[The throughput benchmark against Boost.Asio(中文)](docs/benchmark_throughput_vs_asio_cn.md) : [evpp] and [asio] have the similar performance in this case
+
+[The throughput benchmark against muduo(中文)](docs/benchmark_throughput_vs_muduo_cn.md) : [evpp] and [muduo] have the similar performance in this case
+
 ### Throughput
 
-The throughput benchmark of [evpp] is *40%* higher than *`boost.asio`* and *17%* higher than [libevent].
-The reason of [evpp] has a better throughput benchmark than [libevent] is that [evpp] implements its own IO buffer instead of [libevent]'s evbuffer. 
+The throughput benchmark of [evpp] is **17%~130%** higher than [libevent2] and similar with [boost.asio] and [muduo].
+Although [evpp] is based on [libevent], [evpp] has a better throughput benchmark than [libevent]. That's because [evpp] implements its own IO buffer instead of [libevent]'s evbuffer. 
 
-The benchmark code is here [https://github.com/Qihoo360/evpp/tree/master/benchmark/](https://github.com/Qihoo360/evpp/tree/master/benchmark/).
-
-
-##### Test objects:
-
-1. [evpp-0.2.0](https://github.com/Qihoo360/evpp/archive/0.2.0.tar.gz) based on libevent-2.0.21
-2. boost.asio-1.53
-3. libevent-2.0.21
-
-##### Environment
-
-- Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64
-- Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz
-
-![](docs/benchmark/throughput-1thread-1024bytes.png)
-![](docs/benchmark/throughput-1thread-2048bytes.png)
-![](docs/benchmark/throughput-1thread-4096bytes.png)
-![](docs/benchmark/throughput-1thread-8192bytes.png)
-![](docs/benchmark/throughput-multi-thread-4096bytes-evpp-vs-asio.png)
-
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-libevent-1thread-all.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-all.png)
 
 # Examples
 
@@ -193,5 +193,10 @@ Thanks for [libevent], [glog], [gtest], [Golang], [LevelDB], [rapidjson] project
 [Golang]:https://golang.org
 [muduo]:https://github.com/chenshuo/muduo
 [libevent]:https://github.com/libevent/libevent
+[libevent2]:https://github.com/libevent/libevent
 [LevelDB]:https://github.com/google/leveldb
 [rapidjson]:https://github.com/miloyip/
+[Boost.Asio]:http://www.boost.org/
+[boost.asio]:http://www.boost.org/
+[asio]:http://www.boost.org/
+[boost]:http://www.boost.org/
