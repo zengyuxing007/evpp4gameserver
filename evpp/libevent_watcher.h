@@ -1,6 +1,7 @@
 #pragma once
 
 #include "inner_pre.h"
+
 #include "duration.h"
 #include "event2/util.h"
 
@@ -34,6 +35,7 @@ protected:
 
 protected:
     EventWatcher(struct event_base* evbase, const Handler& handler);
+    EventWatcher(struct event_base* evbase, Handler&& handler);
 
     void Close();
     void FreeEvent();
@@ -52,11 +54,15 @@ protected:
 class EVPP_EXPORT PipeEventWatcher : public EventWatcher
 {
 public:
-    PipeEventWatcher(struct event_base* event_base, const Handler& handler);
     PipeEventWatcher(EventLoop* loop, const Handler& handler);
+    PipeEventWatcher(EventLoop* loop, Handler&& handler);
 
     bool AsyncWait();
     void Notify();
+    int wfd() const
+    {
+        return pipe_[0];
+    }
 private:
     virtual bool DoInit();
     virtual void DoClose();
@@ -68,8 +74,8 @@ private:
 class EVPP_EXPORT TimerEventWatcher : public EventWatcher
 {
 public:
-    TimerEventWatcher(struct event_base* event_base, const Handler& handler, Duration timeout);
     TimerEventWatcher(EventLoop* loop, const Handler& handler, Duration timeout);
+    TimerEventWatcher(EventLoop* loop, Handler&& handler, Duration timeout);
 
     bool AsyncWait();
 
@@ -83,8 +89,8 @@ private:
 class EVPP_EXPORT SignalEventWatcher : public EventWatcher
 {
 public:
-    SignalEventWatcher(int signo, struct event_base* event_base, const Handler& handler);
     SignalEventWatcher(int signo, EventLoop* loop, const Handler& handler);
+    SignalEventWatcher(int signo, EventLoop* loop, Handler&& handler);
 
     bool AsyncWait();
 private:
