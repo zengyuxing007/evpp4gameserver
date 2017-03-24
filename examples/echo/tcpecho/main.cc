@@ -8,37 +8,29 @@
 #endif
 
 void OnMessage(const evpp::TCPConnPtr& conn,
-               evpp::Buffer* msg)
-{
+               evpp::Buffer* msg) {
     std::string s = msg->NextAllString();
     LOG_INFO << "Received a message [" << s << "]";
     conn->Send(s);
 
-    if(s == "quit" || s == "exit")
-    {
+    if (s == "quit" || s == "exit") {
         conn->Close();
     }
 }
 
 
-void OnConnection(const evpp::TCPConnPtr& conn)
-{
-    if(conn->IsConnected())
-    {
+void OnConnection(const evpp::TCPConnPtr& conn) {
+    if (conn->IsConnected()) {
         LOG_INFO << "Accept a new connection from " << conn->remote_addr();
-    }
-    else
-    {
+    } else {
         LOG_INFO << "Disconnected from " << conn->remote_addr();
     }
 }
 
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     std::string port = "9099";
-    if(argc == 2)
-    {
+    if (argc == 2) {
         port = argv[1];
     }
     std::string addr = std::string("0.0.0.0:") + port;

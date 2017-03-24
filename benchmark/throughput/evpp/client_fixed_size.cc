@@ -1,4 +1,7 @@
 // Modified from https://github.com/chenshuo/muduo/blob/master/examples/pingpong/client.cc
+//
+// Every time, we need to receive the whole message and then we can send the next one.
+//
 
 #include <evpp/exp.h>
 #include <evpp/tcp_client.h>
@@ -12,12 +15,14 @@ public:
     Session(evpp::EventLoop* loop,
             const std::string& serverAddr/*ip:port*/,
             const std::string& name,
+            size_t block_size,
             Client* owner)
         : client_(loop, serverAddr, name),
         owner_(owner),
         bytes_read_(0),
         bytes_written_(0),
-        messages_read_(0) {
+        messages_read_(0),
+        block_size_(block_size) {
         client_.SetConnectionCallback(
             std::bind(&Session::OnConnection, this, std::placeholders::_1));
         client_.SetMessageCallback(
@@ -44,11 +49,13 @@ private:
     void OnConnection(const evpp::TCPConnPtr& conn);
 
     void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
-        LOG_TRACE << "bytes_read=" << bytes_read_ << " bytes_writen=" << bytes_written_;
         ++messages_read_;
-        bytes_read_ += buf->size();
-        bytes_written_ += buf->size();
-        conn->Send(buf);
+        while (buf->size() >= block_size_) {
+            bytes_read_ += block_size_;
+            bytes_written_ += block_size_;
+            conn->Send(buf->data(), block_size_);
+            buf->Skip(block_size_);
+        }
     }
 
 private:
@@ -57,17 +64,20 @@ private:
     int64_t bytes_read_;
     int64_t bytes_written_;
     int64_t messages_read_;
+    size_t block_size_;
 };
 
 class Client {
 public:
     Client(evpp::EventLoop* loop,
+           const std::string& name,
            const std::string& serverAddr, // ip:port
            int blockSize,
            int sessionCount,
            int timeout_sec,
            int threadCount)
         : loop_(loop),
+        name_(name),
         session_count_(sessionCount),
         timeout_(timeout_sec),
         connected_count_(0) {
@@ -82,7 +92,7 @@ public:
         for (int i = 0; i < sessionCount; ++i) {
             char buf[32];
             snprintf(buf, sizeof buf, "C%05d", i);
-            Session* session = new Session(tpool_->GetNextLoop(), serverAddr, buf, this);
+            Session* session = new Session(tpool_->GetNextLoop(), serverAddr, buf, blockSize, this);
             session->Start();
             sessions_.push_back(session);
         }
@@ -111,12 +121,10 @@ public:
                 totalBytesRead += it->bytes_read();
                 totalMessagesRead += it->messages_read();
             }
-            LOG_WARN << totalBytesRead << " total bytes read";
-            LOG_WARN << totalMessagesRead << " total messages read";
-            LOG_WARN << static_cast<double>(totalBytesRead) / static_cast<double>(totalMessagesRead)
-                << " average message size";
-            LOG_WARN << static_cast<double>(totalBytesRead) / (timeout_ * 1024 * 1024)
-                << " MiB/s throughput";
+            LOG_WARN << "name=" << name_ << " " << totalBytesRead << " total bytes read";
+            LOG_WARN << "name=" << name_ << " " << totalMessagesRead << " total messages read";
+            LOG_WARN << "name=" << name_ << " " << static_cast<double>(totalBytesRead) / static_cast<double>(totalMessagesRead) << " average message size";
+            LOG_WARN << "name=" << name_ << " " << static_cast<double>(totalBytesRead) / (timeout_ * 1024 * 1024) << " MiB/s throughput";
             loop_->QueueInLoop(std::bind(&Client::Quit, this));
         }
     }
@@ -143,6 +151,7 @@ private:
     }
 private:
     evpp::EventLoop* loop_;
+    std::string name_;
     std::shared_ptr<evpp::EventLoopThreadPool> tpool_;
     int session_count_;
     int timeout_;
@@ -162,6 +171,8 @@ void Session::OnConnection(const evpp::TCPConnPtr& conn) {
 }
 
 int main(int argc, char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
+    FLAGS_stderrthreshold = 0;
     if (argc != 7) {
         fprintf(stderr, "Usage: client <host_ip> <port> <threads> <blocksize> <sessions> <time_seconds>\n");
         return -1;
@@ -177,15 +188,17 @@ int main(int argc, char* argv[]) {
     evpp::EventLoop loop;
     std::string serverAddr = std::string(ip) + ":" + std::to_string(port);
 
-    Client client(&loop, serverAddr, blockSize, sessionCount, timeout, threadCount);
+    Client client(&loop, argv[0], serverAddr, blockSize, sessionCount, timeout, threadCount);
     loop.Run();
     return 0;
 }
 
 
-#ifdef WIN32
-#include "../echo/tcpecho/winmain-inl.h"
-#endif
+
+
+
+
+#include "../../../examples/echo/tcpecho/winmain-inl.h"
 
 
 

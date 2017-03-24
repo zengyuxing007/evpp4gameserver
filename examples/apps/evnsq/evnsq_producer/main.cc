@@ -31,11 +31,11 @@ bool Publish(evnsq::Producer* producer) {
     return producer->MultiPublish(topic2, messages);
 }
 
+static bool g_ready = false;
+
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
-    loop->RunEvery(evpp::Duration(0.001), std::bind(&Publish, p));
-    for (int i = 0; i < 20; i++) {
-        Publish(p);
-    }
+    g_ready = true;
+    loop->RunEvery(evpp::Duration(0.1), std::bind(&Publish, p));
 }
 
 void Close(evnsq::Producer* p) {
@@ -50,15 +50,17 @@ int main(int argc, char* argv[]) {
     int opt = 0;
     //int digit_optind = 0;
     int option_index = 0;
-    const char* optstring = "t:h:";
+    const char* optstring = "t:h:s:";
     static struct option long_options[] = {
         { "nsqd_tcp_addr", required_argument, NULL, 't' },
         { "lookupd_http_addr", required_argument, NULL, 'h' },
+        { "auth_secret", required_argument, NULL, 's' },
         { 0, 0, 0, 0 }
     };
 
     std::string nsqd_tcp_addr;
     std::string lookupd_http_url;
+    std::string auth_secret;
 
     nsqd_tcp_addr = "127.0.0.1:4150";
     //nsqd_tcp_addr = "weizili-L1:4150";
@@ -74,6 +76,10 @@ int main(int argc, char* argv[]) {
             lookupd_http_url = optarg;
             break;
 
+        case 's':
+            auth_secret = optarg;
+            break;
+
         default:
             printf("error argument [%s]\n", argv[optind]);
             return -1;
@@ -81,9 +87,22 @@ int main(int argc, char* argv[]) {
     }
 
     evpp::EventLoop loop;
-    evnsq::Producer client(&loop, evnsq::Option());
+    evnsq::Option op;
+    op.auth_secret = auth_secret;
+    evnsq::Producer client(&loop, op);
     client.SetMessageCallback(&OnMessage);
     client.SetReadyCallback(std::bind(&OnReady, &loop, &client));
+
+    auto cleanup = [&loop, &client]() {
+        client.Close();
+        auto quit = [&loop]() {
+            loop.Stop();
+        };
+        loop.RunAfter(evpp::Duration(2.0), quit);
+    };
+
+    client.SetCloseCallback(cleanup);
+
 
     if (!lookupd_http_url.empty()) {
         client.ConnectToLookupds(lookupd_http_url);
@@ -92,32 +111,32 @@ int main(int argc, char* argv[]) {
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }
 
-    auto f = [&loop, &client]() {
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-        for (;;) {
-            if (loop.pending_functor_count() > 1000) {
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-            } else {
-                if (!Publish(&client)) {
-                    client.Close();
-                    auto quit = [&loop]() {
-                        loop.Stop();
-                    };
-                    loop.RunAfter(evpp::Duration(2.0), quit);
-                    break;
-                }
-            }
-        }
-    };
-    std::thread publish_thread(f);
+//     auto f = [&loop, &client, &cleanup]() {
+//         std::this_thread::sleep_for(std::chrono::seconds(2));
+//         for (;;) {
+//             if (!g_ready) {
+//                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
+//                 continue;
+//             }
+//             if (loop.pending_functor_count() > 1000) {
+//                 std::this_thread::sleep_for(std::chrono::seconds(2));
+//             } else {
+//                 if (!Publish(&client)) {
+//                     cleanup();
+//                     break;
+//                 }
+//             }
+//         }
+//     };
+//     std::thread publish_thread(f);
     loop.RunAfter(evpp::Duration(10.0), std::bind(&Close, &client));
     loop.Run();
-    publish_thread.join();
+//    publish_thread.join();
     return 0;
 }
 
 #ifdef WIN32
-#include "../../../examples/echo/tcpecho/winmain-inl.h"
+#include "../../../echo/tcpecho/winmain-inl.h"
 #endif
 
 

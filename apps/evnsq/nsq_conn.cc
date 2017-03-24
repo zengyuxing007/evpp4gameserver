@@ -35,18 +35,21 @@ void NSQConn::Connect(const std::string& addr) {
     tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
     status_ = kConnecting;
     tcp_client_->SetConnectionCallback(std::bind(&NSQConn::OnTCPConnectionEvent, this, std::placeholders::_1));
-    tcp_client_->SetMessageCallback(std::bind(&NSQConn::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    tcp_client_->SetMessageCallback(std::bind(&NSQConn::OnRecv, this, std::placeholders::_1, std::placeholders::_2));
     tcp_client_->Connect();
 }
 
 
 void NSQConn::Close() {
+    LOG_WARN << "NSQConn::Close() this=" << this << " status=" << StatusToString();
+    status_ = kDisconnecting;
     assert(loop_->IsInLoopThread());
     tcp_client_->Disconnect();
-    status_ = kDisconnecting;
 }
 
 void NSQConn::Reconnect() {
+    LOG_WARN << "NSQConn::Close() this=" << this << " status=" << StatusToString() << " remote_nsq_addr=" << remote_addr();
+
     // Discards all the messages which were cached by the broken tcp connection.
     if (!wait_ack_.empty()) {
         LOG_WARN << "Discards " << wait_ack_.size() << " NSQ messages. nsq_message_missing";
@@ -63,17 +66,16 @@ const std::string& NSQConn::remote_addr() const {
 }
 
 void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
+    LOG_INFO << "NSQConn::OnTCPConnectionEvent status=" << StatusToString() << " TCPConn=" << conn.get() << " remote_addr=" << conn->remote_addr();
     if (conn->IsConnected()) {
         assert(tcp_client_->conn() == conn);
-        assert(status_ == kConnecting);
-        Identify();
-    } else {
-        if (conn->IsDisconnecting()) {
-            LOG_ERROR << "Connection to " << conn->remote_addr() << " was closed by remote server.";
+        if (status_ == kConnecting) {
+            Identify();
         } else {
-            LOG_ERROR << "Connect to " << conn->remote_addr() << " failed.";
+            // Maybe the user layer has close this NSQConn and then the underlying TCPConn established a connection with NSQD to invoke this callback
+            assert(status_ == kDisconnecting);
         }
-
+    } else {
         if (tcp_client_->auto_reconnect()) {
             // tcp_client_ will reconnect to remote NSQD again automatically
             status_ = kConnecting;
@@ -84,13 +86,12 @@ void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
         }
 
         if (conn_fn_) {
-            auto self = shared_from_this();
-            conn_fn_(self);
+            conn_fn_(shared_from_this());
         }
     }
 }
 
-void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts) {
+void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
     while (buf->size() > 4) {
         size_t size = buf->PeekInt32();
 
@@ -103,6 +104,8 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Time
         //LOG_INFO << "Recv a data from NSQD msg body len=" << size - 4 << " body=[" << std::string(buf->data(), size - 4) << "]";
         int32_t frame_type = buf->ReadInt32();
 
+        size_t body_len = size - sizeof(frame_type); // The message body length
+
         switch (status_) {
         case evnsq::NSQConn::kDisconnected:
             break;
@@ -111,24 +114,82 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Time
             break;
 
         case evnsq::NSQConn::kIdentifying:
-            if (buf->NextString(size - sizeof(frame_type)) == kOK) {
-                status_ = kConnected;
-                if (conn_fn_) {
-                    auto self = shared_from_this();
-                    conn_fn_(self);
+            if (option_.feature_negotiation) {
+                /*
+                    {
+                        "max_rdy_count": 2500,
+                        "version": "0.3.8",
+                        "max_msg_timeout": 900000,
+                        "msg_timeout": 60000,
+                        "tls_v1": false,
+                        "deflate": false,
+                        "deflate_level": 0,
+                        "max_deflate_level": 6,
+                        "snappy": false,
+                        "sample_rate": 0,
+                        "auth_required": true,
+                        "output_buffer_size": 16384,
+                        "output_buffer_timeout": 250
+                    }
+                */
+                std::string msg = buf->NextString(body_len);
+                rapidjson::Document doc;
+                doc.Parse(msg.data());
+                if (doc.HasParseError()) {
+                    LOG_ERROR << "Identify Response JSON parsed ERROR. rapidjson ERROR code=" << doc.GetParseError();
+                    OnConnectedFailed();
+                }
+                bool auth_required = doc["auth_required"].GetBool();
+                if (auth_required) {
+                    Authenticate();
+                    // TODO store the options responded of the Identify
+                } else {
+                    OnConnectedOK();
                 }
             } else {
-                LOG_ERROR << "Identify ERROR";
-                Reconnect();
+                if (buf->NextString(body_len) == kOK) {
+                    OnConnectedOK();
+                } else {
+                    LOG_ERROR << "Identify ERROR";
+                    OnConnectedFailed();
+                }
             }
+
             break;
+
+        case evnsq::NSQConn::kAuthenticating:
+        {
+            std::string msg = buf->NextString(body_len);
+            if (msg.substr(0, 2) == "E_") {
+                LOG_ERROR << "Authenticate Failed. [" << msg << "]";
+                OnConnectedFailed();
+            } else {
+                rapidjson::Document doc;
+                doc.Parse(msg.data());
+                if (doc.HasParseError()) {
+                    LOG_ERROR << "Identify Response JSON parsed ERROR. rapidjson ERROR code=" << doc.GetParseError();
+                    OnConnectedFailed();
+                } else {
+                    /*
+                        {
+                            "identity": "9a45d3df376d999c7c37b2766ae4113bb4463a09",
+                            "identity_url": "",
+                            "permission_count": 1
+                        }
+                    */
+                    OnConnectedOK();
+                }
+            }
+
+            break;
+        }
 
         case evnsq::NSQConn::kConnected:
             assert(false && "It should never come here.");
             break;
 
         case evnsq::NSQConn::kSubscribing:
-            if (buf->NextString(size - sizeof(frame_type)) == kOK) {
+            if (buf->NextString(body_len) == kOK) {
                 status_ = kReady;
                 if (conn_fn_) {
                     auto self = shared_from_this();
@@ -142,7 +203,7 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Time
             break;
 
         case evnsq::NSQConn::kReady:
-            OnMessage(size - sizeof(frame_type), frame_type, buf);
+            OnMessage(body_len, frame_type, buf);
             break;
 
         default:
@@ -188,11 +249,21 @@ void NSQConn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* bu
     }
 
     case kFrameTypeError:
-        LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
+    {
+        // E_UNAUTHORIZED AUTH failed for PUB on "xyyyy1" ""
+        std::string msg = std::string(buf->data(), message_len);
+        LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << msg << "]";
+        static const std::string unauthorized = "E_UNAUTHORIZED AUTH";
+        if (strncmp(msg.data(), unauthorized.data(), unauthorized.size()) == 0) {
+            Close();
+            break;
+        }
+
         if (status_ != kDisconnecting) {
             Reconnect();
         }
         break;
+    }
 
     default:
         break;
@@ -219,6 +290,25 @@ void NSQConn::Identify() {
     c.Identify(option_.ToJSON());
     WriteCommand(c);
     status_ = kIdentifying;
+}
+
+void NSQConn::OnConnectedOK() {
+    status_ = kConnected;
+    if (conn_fn_) {
+        auto self = shared_from_this();
+        conn_fn_(self);
+    }
+}
+
+void NSQConn::OnConnectedFailed() {
+    Close();
+}
+
+void NSQConn::Authenticate() {
+    Command c;
+    c.Auth(option_.auth_secret);
+    WriteCommand(c);
+    status_ = kAuthenticating;
 }
 
 void NSQConn::Finish(const std::string& id) {
@@ -268,6 +358,19 @@ CommandPtr NSQConn::PopWaitACKCommand() {
     CommandPtr c = *wait_ack_.begin();
     wait_ack_.pop_front();
     return c;
+}
+
+const char* NSQConn::StatusToString() const {
+    H_CASE_STRING_BIGIN(status_);
+    H_CASE_STRING(kDisconnected);
+    H_CASE_STRING(kConnecting);
+    H_CASE_STRING(kIdentifying);
+    H_CASE_STRING(kAuthenticating);
+    H_CASE_STRING(kConnected);
+    H_CASE_STRING(kSubscribing);
+    H_CASE_STRING(kReady);
+    H_CASE_STRING(kDisconnecting);
+    H_CASE_STRING_END();
 }
 
 void NSQConn::PushWaitACKCommand(const CommandPtr& cmd) {

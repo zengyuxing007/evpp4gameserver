@@ -58,13 +58,12 @@ CommandPtr MemcacheClient::PopWaitingCommand() {
 }
 
 void MemcacheClient::OnResponseData(const evpp::TCPConnPtr& tcp_conn,
-                                    evpp::Buffer* buf,
-                                    evpp::Timestamp ts) {
+                                    evpp::Buffer* buf) {
     if (!codec_) {
         codec_ = new BinaryCodec(this);
     }
 
-    codec_->OnCodecMessage(tcp_conn, buf, ts);
+    codec_->OnCodecMessage(tcp_conn, buf);
 }
 
 
