@@ -48,6 +48,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "udp-echo", "udpecho.vcxproj
 		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F} = {4877AA94-AD55-407F-9ED3-D4503FAB2A7F}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmark", "benchmark", "{6F1C3E22-9289-4CA1-842E-241CF732BE40}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "throughput_header_body", "throughput_header_body", "{33E2CB1B-0D17-4693-91DC-B3063BE57EB8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "benchmark_pingpong_header_body_client", "benchmark\throughput_header_body\evpp\benchmark_pingpong_header_body_client.vcxproj", "{0E003F13-79FB-36A9-A374-CC7FDED7E638}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "benchmark_pingpong_header_body_server", "benchmark\throughput_header_body\evpp\benchmark_pingpong_header_body_server.vcxproj", "{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -86,6 +94,14 @@ Global
 		{24EFE4AA-81A5-4FCA-B3A5-6646D2DABEB3}.Debug|x64.Build.0 = Debug|x64
 		{24EFE4AA-81A5-4FCA-B3A5-6646D2DABEB3}.Release|x64.ActiveCfg = Release|x64
 		{24EFE4AA-81A5-4FCA-B3A5-6646D2DABEB3}.Release|x64.Build.0 = Release|x64
+		{0E003F13-79FB-36A9-A374-CC7FDED7E638}.Debug|x64.ActiveCfg = Debug|x64
+		{0E003F13-79FB-36A9-A374-CC7FDED7E638}.Debug|x64.Build.0 = Debug|x64
+		{0E003F13-79FB-36A9-A374-CC7FDED7E638}.Release|x64.ActiveCfg = Release|x64
+		{0E003F13-79FB-36A9-A374-CC7FDED7E638}.Release|x64.Build.0 = Release|x64
+		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}.Debug|x64.ActiveCfg = Debug|x64
+		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}.Debug|x64.Build.0 = Debug|x64
+		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}.Release|x64.ActiveCfg = Release|x64
+		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,5 +115,8 @@ Global
 		{850BD7DF-6C53-41B9-9521-B093DFFB2E03} = {EF6FA5F7-6C96-475A-85BD-90C44F3DB29E}
 		{EF6FA5F7-6C96-475A-85BD-90C44F3DB29E} = {E8E8B2B4-69D4-4418-8E63-7BBB791472DB}
 		{24EFE4AA-81A5-4FCA-B3A5-6646D2DABEB3} = {EF6FA5F7-6C96-475A-85BD-90C44F3DB29E}
+		{33E2CB1B-0D17-4693-91DC-B3063BE57EB8} = {6F1C3E22-9289-4CA1-842E-241CF732BE40}
+		{0E003F13-79FB-36A9-A374-CC7FDED7E638} = {33E2CB1B-0D17-4693-91DC-B3063BE57EB8}
+		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646} = {33E2CB1B-0D17-4693-91DC-B3063BE57EB8}
 	EndGlobalSection
 EndGlobal

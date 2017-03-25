@@ -111,6 +111,16 @@ public:
     }
     void SetTCPNoDelay(bool on);
     // TODO void SetLinger();
+
+    void ReserveInputBuffer(size_t len)
+    {
+        input_buffer_.Reserve(len);
+    }
+    void ReserveOutputBuffer(size_t len)
+    {
+        output_buffer_.Reserve(len);
+    }
+
 protected:
     // These methods are visible only for TCPClient and TCPServer.
     // We don't want the user layer to access these methods.
