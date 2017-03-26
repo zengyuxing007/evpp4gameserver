@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\evpp\buffer.cc" />
     <ClCompile Include="..\evpp\connector.cc" />
     <ClCompile Include="..\evpp\dns_resolver.cc" />
     <ClCompile Include="..\evpp\duration.cc" />
@@ -28,6 +29,7 @@
     <ClCompile Include="..\evpp\http\http_server.cc" />
     <ClCompile Include="..\evpp\inner_pre.cc" />
     <ClCompile Include="..\evpp\invoke_timer.cc" />
+    <ClCompile Include="..\evpp\libevent_compact.cc" />
     <ClCompile Include="..\evpp\libevent_watcher.cc" />
     <ClCompile Include="..\evpp\listener.cc" />
     <ClCompile Include="..\evpp\sockets.cc" />

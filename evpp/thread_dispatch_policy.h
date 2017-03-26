@@ -1,30 +1,23 @@
 #pragma once
 
-namespace evpp
-{
-
-class EVPP_EXPORT ThreadDispatchPolicy
-{
+namespace evpp {
+class EVPP_EXPORT ThreadDispatchPolicy {
 public:
-    enum Policy
-    {
+    enum Policy {
         kRoundRobin,
         kIPAddressHashing,
     };
 
     ThreadDispatchPolicy() : policy_(kRoundRobin) {}
 
-    void SetThreadDispatchPolicy(Policy v)
-    {
+    void SetThreadDispatchPolicy(Policy v) {
         policy_ = v;
     }
 
-    bool IsRoundRobin() const
-    {
+    bool IsRoundRobin() const {
         return policy_ == kRoundRobin;
     }
 protected:
     Policy policy_;
 };
-
 }

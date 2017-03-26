@@ -7,29 +7,23 @@
 #include "evpp/slice.h"
 
 struct evhttp_request;
-namespace evpp
-{
-namespace httpc
-{
+namespace evpp {
+namespace httpc {
 class Request;
-class EVPP_EXPORT Response
-{
+class EVPP_EXPORT Response {
 public:
     typedef std::map<evpp::Slice, evpp::Slice> Headers;
     Response(Request* r, struct evhttp_request* evreq);
     Response(Request* r);
     ~Response();
 
-    int http_code() const
-    {
+    int http_code() const {
         return http_code_;
     }
-    const evpp::Slice& body() const
-    {
+    const evpp::Slice& body() const {
         return body_;
     }
-    const Request* request() const
-    {
+    const Request* request() const {
         return request_;
     }
     const char* FindHeader(const char* key);

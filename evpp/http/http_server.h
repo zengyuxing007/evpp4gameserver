@@ -3,15 +3,13 @@
 #include "service.h"
 #include "evpp/thread_dispatch_policy.h"
 
-namespace evpp
-{
+namespace evpp {
 class EventLoop;
 class EventLoopThreadPool;
 class PipeEventWatcher;
 class EventLoopThread;
 
-namespace http
-{
+namespace http {
 class Service;
 
 // This is a standalone running HTTP server. It will start a new thread
@@ -22,8 +20,7 @@ class Service;
 //
 // if the thread_num is not 0, it will also start new worker thread pool
 // to help process HTTP request.
-class EVPP_EXPORT Server : public ThreadDispatchPolicy
-{
+class EVPP_EXPORT Server : public ThreadDispatchPolicy {
 public:
     Server(uint32_t thread_num = 0);
 
@@ -50,8 +47,7 @@ public:
     bool IsRunning() const;
     bool IsStopped() const;
 
-    std::shared_ptr<EventLoopThreadPool> pool() const
-    {
+    std::shared_ptr<EventLoopThreadPool> pool() const {
         return tpool_;
     }
 private:
@@ -63,8 +59,7 @@ private:
     EventLoop* GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx);
 
 private:
-    struct ListenThread
-    {
+    struct ListenThread {
         // The listening main thread
         std::shared_ptr<EventLoopThread> thread;
 

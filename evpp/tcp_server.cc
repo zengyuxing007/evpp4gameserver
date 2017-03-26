@@ -4,8 +4,7 @@
 #include "evpp/listener.h"
 #include "evpp/tcp_conn.h"
 
-namespace evpp
-{
+namespace evpp {
 TCPServer::TCPServer(EventLoop* loop,
                      const std::string& laddr,
                      const std::string& name,
@@ -15,13 +14,11 @@ TCPServer::TCPServer(EventLoop* loop,
     , name_(name)
     , conn_fn_(&internal::DefaultConnectionCallback)
     , msg_fn_(&internal::DefaultMessageCallback)
-    , next_conn_id_(0)
-{
+    , next_conn_id_(0) {
     tpool_.reset(new EventLoopThreadPool(loop_, thread_num));
 }
 
-TCPServer::~TCPServer()
-{
+TCPServer::~TCPServer() {
     LOG_TRACE << "TCPServer::~TCPServer()";
     assert(tpool_->IsStopped());
     assert(connections_.empty());
@@ -29,8 +26,7 @@ TCPServer::~TCPServer()
     tpool_.reset();
 }
 
-bool TCPServer::Init()
-{
+bool TCPServer::Init() {
     listener_.reset(new Listener(loop_, listen_addr_));
     listener_->Listen();
     listener_->SetNewConnectionCallback(
@@ -42,21 +38,17 @@ bool TCPServer::Init()
     return true;
 }
 
-bool TCPServer::Start()
-{
+bool TCPServer::Start() {
     return tpool_->Start(true);
 }
 
 
-bool TCPServer::IsRunning() const
-{
-    if(!loop_->IsRunning())
-    {
+bool TCPServer::IsRunning() const {
+    if (!loop_->IsRunning()) {
         return false;
     }
 
-    if(!tpool_->IsRunning())
-    {
+    if (!tpool_->IsRunning()) {
         return false;
     }
 
@@ -64,15 +56,12 @@ bool TCPServer::IsRunning() const
     return true;
 }
 
-bool TCPServer::IsStopped() const
-{
-    if(!loop_->IsStopped())
-    {
+bool TCPServer::IsStopped() const {
+    if (!loop_->IsStopped()) {
         return false;
     }
 
-    if(!tpool_->IsStopped())
-    {
+    if (!tpool_->IsStopped()) {
         return false;
     }
 
@@ -80,19 +69,16 @@ bool TCPServer::IsStopped() const
     return true;
 }
 
-void TCPServer::Stop()
-{
+void TCPServer::Stop() {
     loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this));
 }
 
-void TCPServer::StopInLoop()
-{
+void TCPServer::StopInLoop() {
     LOG_TRACE << "Entering TCPServer::StopInLoop";
     listener_->Stop();
     listener_.reset();
 
-    for(auto& c : connections_)
-    {
+    for (auto& c : connections_) {
         c.second->Close();
     }
 
@@ -103,8 +89,7 @@ void TCPServer::StopInLoop()
 
 void TCPServer::HandleNewConn(int sockfd,
                               const std::string& remote_addr/*ip:port*/,
-                              const struct sockaddr_in* raddr)
-{
+                              const struct sockaddr_in* raddr) {
     assert(loop_->IsInLoopThread());
     EventLoop* io_loop = GetNextLoop(raddr);
     std::string n = name_ + "-" + remote_addr + "#" + std::to_string(next_conn_id_++); // TODO use string buffer
@@ -117,23 +102,18 @@ void TCPServer::HandleNewConn(int sockfd,
     connections_[n] = conn;
 }
 
-EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr)
-{
-    if(IsRoundRobin())
-    {
+EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
+    if (IsRoundRobin()) {
         return tpool_->GetNextLoop();
-    }
-    else
-    {
+    } else {
         return tpool_->GetNextLoopWithHash(raddr->sin_addr.s_addr);
     }
 }
 
-void TCPServer::RemoveConnection(const TCPConnPtr& conn)
-{
-    auto f = [ = ]()
-    {
+void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
+    auto f = [ = ]() {
         // Remove the connection in the listening EventLoop
+        LOG_INFO << "TCPServer::RemoveConnection conn=" << conn.get() << " fd="<< conn->fd();
         assert(this->loop_->IsInLoopThread());
         this->connections_.erase(conn->name());
     };

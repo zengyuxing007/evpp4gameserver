@@ -1,4 +1,4 @@
-﻿#include "test_common.h"
+#include "test_common.h"
 
 #include <evpp/exp.h>
 #include <evpp/libevent_headers.h>
@@ -10,50 +10,36 @@
 #include <evpp/tcp_conn.h>
 #include <evpp/tcp_client.h>
 
+
 #include <thread>
 
-namespace
-{
+namespace {
 static std::shared_ptr<evpp::TCPServer> tsrv;
 static std::atomic<int> connected_count(0);
 static std::atomic<int> message_recved_count(0);
 const static std::string addr = "127.0.0.1:19099";
-static void OnMessage(const evpp::TCPConnPtr& conn,
-                      evpp::Buffer* msg)
-{
-    message_recved_count++;
-}
 
-void OnClientConnection(const evpp::TCPConnPtr& conn)
-{
-    if(conn->IsConnected())
-    {
+void OnClientConnection(const evpp::TCPConnPtr& conn) {
+    if (conn->IsConnected()) {
         conn->Send("hello");
         LOG_INFO << "Send a message to server when connected.";
         connected_count++;
-    }
-    else
-    {
+    } else {
         LOG_INFO << "Disconnected from " << conn->remote_addr();
     }
 }
 
-evpp::TCPClient* StartTCPClient(evpp::EventLoop* loop)
-{
+evpp::TCPClient* StartTCPClient(evpp::EventLoop* loop) {
     evpp::TCPClient* client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
     client->SetConnectionCallback(&OnClientConnection);
     client->Connect();
     return client;
 }
 
-void DeleteTCPClient(evpp::TCPClient* client)
-{
-    delete client;
-}
 }
 
-TEST_UNIT(testTCPClientReconnect)
-{
+
+TEST_UNIT(testTCPClientReconnect) {
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
     tcp_client_thread->SetName("TCPClientThread");
     tcp_client_thread->Start(true);
@@ -63,11 +49,13 @@ TEST_UNIT(testTCPClientReconnect)
     evpp::TCPClient* client = StartTCPClient(tcp_client_thread->event_loop());
     client->set_reconnect_interval(evpp::Duration(0.1));
 
-    int test_count = 2;
-    for(int i = 0; i < test_count; i++)
-    {
-        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", 1)); //TODO FIXME �޸�Ϊ0���̣߳������map/vector iterator����
-        tsrv->SetMessageCallback(&OnMessage);
+    int test_count = 3;
+    for (int i = 0; i < test_count; i++) {
+        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", i));
+        tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
+                                    evpp::Buffer* msg) {
+            message_recved_count++;
+        });
         tsrv->Init()&& tsrv->Start();
         usleep(evpp::Duration(2.0).Microseconds());
         tsrv->Stop();
@@ -75,8 +63,8 @@ TEST_UNIT(testTCPClientReconnect)
         tsrv.reset();
     }
     LOG_INFO << "XXXXXXXXXX connected_count=" << connected_count << " message_recved_count=" << message_recved_count;
-    tcp_client_thread->event_loop()->RunInLoop(std::bind(&evpp::TCPClient::Disconnect, client));
-    tcp_client_thread->event_loop()->RunAfter(evpp::Duration(1.0), std::bind(&DeleteTCPClient, client));
+    tcp_client_thread->event_loop()->RunInLoop([client]() {client->Disconnect(); });
+    tcp_client_thread->event_loop()->RunAfter(evpp::Duration(1.0), [client]() {delete client; });
     usleep(evpp::Duration(2.0).Microseconds());
     client = nullptr;
     tcp_client_thread->Stop(true);
@@ -92,43 +80,5 @@ TEST_UNIT(testTCPClientReconnect)
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
-TEST_UNIT(testTCPClientConnectFailed)
-{
-    std::shared_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
-    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), addr, "TCPPingPongClient"));
-    client->SetConnectionCallback([ &loop, &client ](const evpp::TCPConnPtr & conn)
-    {
-        H_TEST_ASSERT(!conn->IsConnected());
-        client->Disconnect();
-        loop->Stop();
-    });
-    client->set_auto_reconnect(false);
-    client->Connect();
-    loop->Run();
-    client.reset();
-    loop.reset();
-    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
-}
 
-TEST_UNIT(testTCPClientDisconnectImmediately)
-{
-    std::shared_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
-    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), "cmake.org:80", "TCPPingPongClient"));
-    client->SetConnectionCallback([loop, client](const evpp::TCPConnPtr & conn)
-    {
-        H_TEST_ASSERT(!conn->IsConnected());
-        H_TEST_ASSERT(!loop->IsRunning());
-        auto f = [loop]()
-        {
-            loop->Stop();
-        };
-        loop->RunAfter(300.0, f);
-    });
-    client->set_auto_reconnect(false);
-    client->Connect();
-    client->Disconnect();
-    loop->Run();
-    client.reset();
-    loop.reset();
-    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
-}
+

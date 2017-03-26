@@ -2,8 +2,7 @@
 
 #include "evpp/duration.h"
 
-namespace evpp
-{
+namespace evpp {
 const int64_t Duration::kNanosecond = 1LL;
 const int64_t Duration::kMicrosecond = 1000 * kNanosecond;
 const int64_t Duration::kMillisecond = 1000 * kMicrosecond;

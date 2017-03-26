@@ -4,58 +4,47 @@
 #include "evpp/libevent_headers.h"
 #include "evpp/sockets.h"
 
-namespace evpp
-{
-namespace udp
-{
-namespace sync
-{
-Client::Client()
-{
+namespace evpp {
+namespace udp {
+namespace sync {
+Client::Client() {
     sockfd_ = INVALID_SOCKET;
     memset(&remote_addr_, 0, sizeof(remote_addr_));
 }
 
-Client::~Client(void)
-{
+Client::~Client(void) {
     Close();
 }
 
-bool Client::Connect(const struct sockaddr_in& addr)
-{
+bool Client::Connect(const struct sockaddr_in& addr) {
     memcpy(&remote_addr_, &addr, sizeof(remote_addr_));
     return Connect();
 }
 
-bool Client::Connect(const char* host, int port)
-{
+bool Client::Connect(const char* host, int port) {
     char buf[32] = {};
     snprintf(buf, sizeof buf, "%s:%d", host, port);
     return Connect(buf);
 }
 
-bool Client::Connect(const char* addr/*host:port*/)
-{
+bool Client::Connect(const char* addr/*host:port*/) {
     struct sockaddr_in raddr = sock::ParseFromIPPort(addr);
     return Connect(raddr);
 }
 
-bool Client::Connect(const struct sockaddr& addr)
-{
+bool Client::Connect(const struct sockaddr& addr) {
     memcpy(&remote_addr_, &addr, sizeof(remote_addr_));
     return Connect();
 }
 
-bool Client::Connect()
-{
+bool Client::Connect() {
     sockfd_ = ::socket(AF_INET, SOCK_DGRAM, 0);
     sock::SetReuseAddr(sockfd_);
 
     socklen_t addrlen = sizeof(remote_addr_);
     int ret = ::connect(sockfd_, reinterpret_cast<struct sockaddr*>(&remote_addr_), addrlen);
 
-    if(ret != 0)
-    {
+    if (ret != 0) {
         Close();
         struct sockaddr_in* paddr = reinterpret_cast<struct sockaddr_in*>(&remote_addr_);
         LOG_ERROR << "Failed to connect to remote IP="
@@ -69,16 +58,13 @@ bool Client::Connect()
 }
 
 
-void Client::Close()
-{
+void Client::Close() {
     EVUTIL_CLOSESOCKET(sockfd_);
 }
 
 
-std::string Client::DoRequest(const std::string& data, uint32_t timeout_ms)
-{
-    if(!Send(data))
-    {
+std::string Client::DoRequest(const std::string& data, uint32_t timeout_ms) {
+    if (!Send(data)) {
         int eno = errno;
         LOG_ERROR << "sent failed, errno=" << eno << " " << strerror(eno) << " , dlen=" << data.size();
         return "";
@@ -91,32 +77,26 @@ std::string Client::DoRequest(const std::string& data, uint32_t timeout_ms)
     socklen_t m_nAddrLen = sizeof(remote_addr_);
     int readn = ::recvfrom(sockfd_, msg->WriteBegin(), buf_size, 0, msg->mutable_remote_addr(), &m_nAddrLen);
     int err = errno;
-    if(readn >= 0)
-    {
+    if (readn >= 0) {
         msg->WriteBytes(readn);
         return std::string(msg->data(), msg->size());
-    }
-    else
-    {
+    } else {
         LOG_ERROR << "errno=" << err << " " << strerror(err) << " recvfrom return -1";
     }
 
     return "";
 }
 
-std::string Client::DoRequest(const std::string& remote_ip, int port, const std::string& udp_package_data, uint32_t timeout_ms)
-{
+std::string Client::DoRequest(const std::string& remote_ip, int port, const std::string& udp_package_data, uint32_t timeout_ms) {
     Client c;
-    if(!c.Connect(remote_ip.data(), port))
-    {
+    if (!c.Connect(remote_ip.data(), port)) {
         return "";
     }
 
     return c.DoRequest(udp_package_data, timeout_ms);
 }
 
-bool Client::Send(const char* msg, size_t len)
-{
+bool Client::Send(const char* msg, size_t len) {
     // TODO use 'send' to improve performance??
     int sentn = ::sendto(sockfd(),
                          msg,
@@ -124,35 +104,29 @@ bool Client::Send(const char* msg, size_t len)
     return sentn > 0;
 }
 
-bool Client::Send(const std::string& msg)
-{
+bool Client::Send(const std::string& msg) {
     return Send(msg.data(), msg.size());
 }
 
-bool Client::Send(const std::string& msg, const struct sockaddr_in& addr)
-{
+bool Client::Send(const std::string& msg, const struct sockaddr_in& addr) {
     return Client::Send(msg.data(), msg.size(), addr);
 }
 
 
-bool Client::Send(const char* msg, size_t len, const struct sockaddr_in& addr)
-{
+bool Client::Send(const char* msg, size_t len, const struct sockaddr_in& addr) {
     Client c;
-    if(!c.Connect(addr))
-    {
+    if (!c.Connect(addr)) {
         return false;
     }
 
     return c.Send(msg, len);
 }
 
-bool Client::Send(const MessagePtr& msg)
-{
+bool Client::Send(const MessagePtr& msg) {
     return Client::Send(msg->data(), msg->size(), *reinterpret_cast<const struct sockaddr_in*>(msg->remote_addr()));
 }
 
-bool Client::Send(const Message* msg)
-{
+bool Client::Send(const Message* msg) {
     return Client::Send(msg->data(), msg->size(), *reinterpret_cast<const struct sockaddr_in*>(msg->remote_addr()));
 }
 

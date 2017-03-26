@@ -1,12 +1,11 @@
 #pragma once
 
 #include "evpp/event_loop_thread.h"
+
 #include <atomic>
 
-namespace evpp
-{
-class EVPP_EXPORT EventLoopThreadPool
-{
+namespace evpp {
+class EVPP_EXPORT EventLoopThreadPool {
 public:
     EventLoopThreadPool(EventLoop* base_loop, uint32_t thread_num);
     ~EventLoopThreadPool();

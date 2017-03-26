@@ -3,13 +3,11 @@
 #include "evpp/inner_pre.h"
 #include "evpp/timestamp.h"
 
-namespace evpp
-{
+namespace evpp {
 class EventLoop;
 class FdChannel;
 
-class EVPP_EXPORT Listener
-{
+class EVPP_EXPORT Listener {
 public:
     typedef std::function <
     void(int sockfd,
@@ -22,17 +20,15 @@ public:
     void Listen();
     void Stop();
 
-    void SetNewConnectionCallback(NewConnectionCallback cb)
-    {
+    void SetNewConnectionCallback(NewConnectionCallback cb) {
         new_conn_fn_ = cb;
     }
 
-    bool listening() const
-    {
+    bool listening() const {
         return listening_;
     }
 private:
-    void HandleAccept(Timestamp ts);
+    void HandleAccept();
 
 private:
     int fd_;// The listening socket fd

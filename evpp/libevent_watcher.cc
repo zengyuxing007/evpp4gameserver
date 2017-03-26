@@ -169,7 +169,7 @@ void PipeEventWatcher::DoClose()
     }
 }
 
-void PipeEventWatcher::HandlerFn(evutil_socket_t  /*fd*/, short /*which*/, void* v)
+void PipeEventWatcher::HandlerFn(evutil_socket_t /*fd*/, short /*which*/, void* v)
 {
     PipeEventWatcher* e = (PipeEventWatcher*)v;
 #ifdef H_BENCHMARK_TESTING
@@ -276,3 +276,4 @@ bool SignalEventWatcher::AsyncWait()
     return Watch(Duration());
 }
 }
+

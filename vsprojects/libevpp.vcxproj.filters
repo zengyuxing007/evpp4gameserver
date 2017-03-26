@@ -109,6 +109,12 @@
     <ClCompile Include="..\evpp\udp\sync_udp_client.cc">
       <Filter>udp</Filter>
     </ClCompile>
+    <ClCompile Include="..\evpp\buffer.cc">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\libevent_compact.cc">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\evpp\exp.h">

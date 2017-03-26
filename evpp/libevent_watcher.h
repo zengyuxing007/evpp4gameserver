@@ -28,6 +28,10 @@ public:
     // @return void -
     void SetCancelCallback(const Handler& cb);
 
+    void ClearHandler()
+    {
+        handler_ = Handler();
+    }
 protected:
     // @note It MUST be called in the event thread.
     // @param timeout the maximum amount of time to wait for the event, or 0 to wait forever

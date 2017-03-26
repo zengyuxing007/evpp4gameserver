@@ -1,4 +1,5 @@
 #include "evpp/inner_pre.h"
+
 #include "evpp/libevent_headers.h"
 
 #ifdef H_OS_WINDOWS
@@ -8,16 +9,20 @@
 #pragma comment(lib, "libevent_extras.lib")
 #endif
 #pragma comment(lib,"Ws2_32.lib")
+
 #ifdef H_DEBUG_MODE
-#pragma comment(lib, "libglog_static_d")
+#pragma comment(lib,"libglog_static_d.lib")
 #else
-#pragma comment(lib, "libglog_static")
+#pragma comment(lib,"libglog_static.lib")
 #endif
+
 #endif
+
 
 #ifndef H_OS_WINDOWS
 #include <signal.h>
 #endif
+
 
 #include <map>
 #include <thread>
@@ -25,6 +30,7 @@
 
 namespace evpp
 {
+
 
 namespace
 {
@@ -69,6 +75,7 @@ int EventAdd(struct event* ev, const struct timeval* timeout)
             assert("event_add twice");
         }
     }
+    LOG_DEBUG << "event_add ev=" << ev << " fd=" << ev->ev_fd << " user_ptr=" << ev->ev_arg << " tid=" << std::this_thread::get_id();
 #endif
     return event_add(ev, timeout);
 }
@@ -95,6 +102,7 @@ int EventDel(struct event* ev)
             evmap.erase(it);
         }
     }
+    LOG_DEBUG << "event_del ev=" << ev << " fd=" << ev->ev_fd << " tid=" << std::this_thread::get_id();
 #endif
     return event_del(ev);
 }

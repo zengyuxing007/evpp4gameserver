@@ -28,6 +28,7 @@ FdChannel::~FdChannel()
 
 void FdChannel::Close()
 {
+    LOG_INFO << "FdChannel::Close() this=" << this << " fd=" << fd_;
     assert(event_);
     if(event_)
     {
@@ -40,10 +41,8 @@ void FdChannel::Close()
         delete(event_);
         event_ = nullptr;
     }
-
     read_fn_ = ReadEventCallback();
     write_fn_ = EventCallback();
-    close_fn_ = EventCallback();
 }
 
 void FdChannel::AttachToLoop()
@@ -59,8 +58,9 @@ void FdChannel::AttachToLoop()
     }
 
     assert(!attached_);
-    event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
-    event_base_set(loop_->event_base(), event_);
+    ::event_set(event_, fd_, events_ | EV_PERSIST,
+                &FdChannel::HandleEvent, this);
+    ::event_base_set(loop_->event_base(), event_);
 
     if(EventAdd(event_, nullptr) == 0)
     {
@@ -192,7 +192,7 @@ void FdChannel::HandleEvent(int sockfd, short which)
 
     if((which & kReadable) && read_fn_)
     {
-        read_fn_(Timestamp::Now());
+        read_fn_();
     }
 
     if((which & kWritable) && write_fn_)

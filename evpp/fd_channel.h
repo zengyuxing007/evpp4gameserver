@@ -1,8 +1,8 @@
 #pragma once
 
 #include "libevent_watcher.h"
+
 #include "evpp/timestamp.h"
-#include "event2/util.h"
 
 struct event;
 struct event_base;
@@ -27,7 +27,7 @@ public:
         kWritable = 0x04,
     };
     typedef std::function<void()> EventCallback;
-    typedef std::function<void(Timestamp)> ReadEventCallback;
+    typedef std::function<void()> ReadEventCallback;
 
 public:
     FdChannel(EventLoop* loop, int fd,
@@ -82,11 +82,6 @@ public:
         write_fn_ = cb;
     }
 
-    void SetCloseCallback(const EventCallback& cb)
-    {
-        close_fn_ = cb;
-    }
-
 private:
     void HandleEvent(int fd, short which);
     static void HandleEvent(evutil_socket_t fd, short which, void* v);
@@ -96,7 +91,6 @@ private:
 private:
     ReadEventCallback read_fn_;
     EventCallback write_fn_;
-    EventCallback close_fn_;
 
     EventLoop* loop_;
     bool attached_; // A flag indicate whether this FdChannel has been attached to loop_

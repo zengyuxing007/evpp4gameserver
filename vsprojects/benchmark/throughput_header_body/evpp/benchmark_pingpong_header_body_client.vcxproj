@@ -87,7 +87,7 @@
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>E:/cpp/evpp/msvc/bin/Debug/benchmark_pingpong_header_body_client.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/cpp/evpp/msvc/bin/Debug/benchmark_pingpong_header_body_client.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)$(TargetName).pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
       </Version>
@@ -130,7 +130,7 @@
       <GenerateDebugInformation>No</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>E:/cpp/evpp/msvc/bin/Release/benchmark_pingpong_header_body_client.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/cpp/evpp/msvc/bin/Release/benchmark_pingpong_header_body_client.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>$(OutDir)$(TargetName).pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
       </Version>

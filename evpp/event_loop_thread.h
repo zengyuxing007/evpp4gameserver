@@ -7,12 +7,10 @@
 struct event_base;
 struct event;
 
-namespace evpp
-{
+namespace evpp {
 
 class EventLoop;
-class EVPP_EXPORT EventLoopThread
-{
+class EVPP_EXPORT EventLoopThread {
 public:
     typedef std::function<void()> Functor;
     EventLoopThread();
@@ -39,8 +37,7 @@ private:
 private:
     std::shared_ptr<EventLoop> event_loop_;
     std::shared_ptr<std::thread> thread_;
-    enum Status
-    {
+    enum Status {
         kRunning = 1,
         kStopping = 2,
         kStopped = 3,

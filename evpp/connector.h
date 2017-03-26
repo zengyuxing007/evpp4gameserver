@@ -5,15 +5,13 @@
 #include "evpp/inner_pre.h"
 #include "evpp/duration.h"
 
-namespace evpp
-{
+namespace evpp {
 class EventLoop;
 class FdChannel;
 class TimerEventWatcher;
 class DNSResolver;
 class TCPClient;
-class EVPP_EXPORT Connector : public std::enable_shared_from_this<Connector>
-{
+class EVPP_EXPORT Connector : public std::enable_shared_from_this<Connector> {
 public:
     typedef std::function<void(int sockfd, const std::string& /*local addr*/)> NewConnectionCallback;
     Connector(EventLoop* loop, TCPClient* client);
@@ -21,24 +19,19 @@ public:
     void Start();
     void Cancel();
 public:
-    void SetNewConnectionCallback(NewConnectionCallback cb)
-    {
+    void SetNewConnectionCallback(NewConnectionCallback cb) {
         conn_fn_ = cb;
     }
-    bool IsConnecting() const
-    {
+    bool IsConnecting() const {
         return status_ == kConnecting;
     }
-    bool IsConnected() const
-    {
+    bool IsConnected() const {
         return status_ == kConnected;
     }
-    bool IsDisconnected() const
-    {
+    bool IsDisconnected() const {
         return status_ == kDisconnected;
     }
-    int status() const
-    {
+    int status() const {
         return status_;
     }
 private:
