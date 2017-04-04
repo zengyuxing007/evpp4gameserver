@@ -56,6 +56,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "benchmark_pingpong_header_b
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "benchmark_pingpong_header_body_server", "benchmark\throughput_header_body\evpp\benchmark_pingpong_header_body_server.vcxproj", "{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AFNet", "AFNet", "{4A9A66DB-3D1F-47BB-9515-D6FC25AE000D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "af_client", "AFNet\af_client.vcxproj", "{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "af_server", "AFNet\af_server.vcxproj", "{D17F0638-FE15-4029-8C9F-7FB0AC18C550}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -102,6 +108,14 @@ Global
 		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}.Debug|x64.Build.0 = Debug|x64
 		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}.Release|x64.ActiveCfg = Release|x64
 		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646}.Release|x64.Build.0 = Release|x64
+		{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF}.Debug|x64.ActiveCfg = Debug|x64
+		{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF}.Debug|x64.Build.0 = Debug|x64
+		{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF}.Release|x64.ActiveCfg = Release|x64
+		{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF}.Release|x64.Build.0 = Release|x64
+		{D17F0638-FE15-4029-8C9F-7FB0AC18C550}.Debug|x64.ActiveCfg = Debug|x64
+		{D17F0638-FE15-4029-8C9F-7FB0AC18C550}.Debug|x64.Build.0 = Debug|x64
+		{D17F0638-FE15-4029-8C9F-7FB0AC18C550}.Release|x64.ActiveCfg = Release|x64
+		{D17F0638-FE15-4029-8C9F-7FB0AC18C550}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -118,5 +132,7 @@ Global
 		{33E2CB1B-0D17-4693-91DC-B3063BE57EB8} = {6F1C3E22-9289-4CA1-842E-241CF732BE40}
 		{0E003F13-79FB-36A9-A374-CC7FDED7E638} = {33E2CB1B-0D17-4693-91DC-B3063BE57EB8}
 		{22271EF7-00A7-3EBD-BD2E-27C45CCF8646} = {33E2CB1B-0D17-4693-91DC-B3063BE57EB8}
+		{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF} = {4A9A66DB-3D1F-47BB-9515-D6FC25AE000D}
+		{D17F0638-FE15-4029-8C9F-7FB0AC18C550} = {4A9A66DB-3D1F-47BB-9515-D6FC25AE000D}
 	EndGlobalSection
 EndGlobal
