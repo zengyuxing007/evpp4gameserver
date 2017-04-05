@@ -11,16 +11,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="header.h" />
+    <ClCompile Include="client.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="server.cc" />
+    <ClInclude Include="header.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGUID>{D17F0638-FE15-4029-8C9F-7FB0AC18C550}</ProjectGUID>
+    <ProjectGUID>{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF}</ProjectGUID>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
-    <ProjectName>af_server</ProjectName>
+    <ProjectName>AFClient</ProjectName>
     <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -92,7 +92,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)../3rdparty/lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/cpp/evpp/msvc/bin/Debug/benchmark_pingpong_header_body_server.lib</ImportLibrary>
+      <ImportLibrary>E:/cpp/evpp/msvc/bin/Debug/benchmark_pingpong_header_body_client.lib</ImportLibrary>
       <ProgramDataBaseFile>$(OutDir)$(TargetName).pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>
@@ -135,7 +135,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)../3rdparty/lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>No</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/cpp/evpp/msvc/bin/Release/benchmark_pingpong_header_body_server.lib</ImportLibrary>
+      <ImportLibrary>E:/cpp/evpp/msvc/bin/Release/benchmark_pingpong_header_body_client.lib</ImportLibrary>
       <ProgramDataBaseFile>$(OutDir)$(TargetName).pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version>

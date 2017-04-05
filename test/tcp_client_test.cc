@@ -1,6 +1,5 @@
 #include "test_common.h"
 
-#include <evpp/exp.h>
 #include <evpp/libevent_headers.h>
 #include <evpp/libevent_watcher.h>
 #include <evpp/event_loop.h>
@@ -84,6 +83,20 @@ TEST_UNIT(testTCPClientDisconnectAndDestruct) {
     loop->RunAfter(100.0, [&nc]() {nc.Disconnect(); });
     loop->Run();
     loop.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
+
+TEST_UNIT(testTCPClientConnectLocalhost) {
+    evpp::EventLoop loop;
+    evpp::TCPClient client(&loop, "localhost:39099", "TestClient");
+    client.SetConnectionCallback([&loop, &client](const evpp::TCPConnPtr& conn) {
+        H_TEST_ASSERT(!conn->IsConnected());
+        client.Disconnect();
+        loop.Stop();
+    });
+    client.SetMessageCallback([](const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {});
+    client.Connect();
+    loop.Run();
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 

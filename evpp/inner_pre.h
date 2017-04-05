@@ -14,7 +14,8 @@
 #endif
 
 struct event;
-namespace evpp {
+namespace evpp
+{
 int EventAdd(struct event* ev, const struct timeval* timeout);
 int EventDel(struct event*);
 EVPP_EXPORT int GetActiveEventCount();

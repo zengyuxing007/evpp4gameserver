@@ -58,9 +58,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "benchmark_pingpong_header_b
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AFNet", "AFNet", "{4A9A66DB-3D1F-47BB-9515-D6FC25AE000D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "af_client", "AFNet\af_client.vcxproj", "{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AFClient", "AFNet\AFClient.vcxproj", "{36FBA1CF-5007-44C0-AB03-D4F28E0B1EAF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "af_server", "AFNet\af_server.vcxproj", "{D17F0638-FE15-4029-8C9F-7FB0AC18C550}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AFServer", "AFNet\AFServer.vcxproj", "{D17F0638-FE15-4029-8C9F-7FB0AC18C550}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

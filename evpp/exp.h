@@ -1,22 +1,20 @@
 #pragma once
 
-#include "platform_config.h"
+// We must link against these libraries on windows platform for Visual Studio IDE.
 
-#ifdef H_OS_WINDOWS
-#ifdef H_DEBUG_MODE
-H_LINK_LIB("evpp_static_d")
-H_LINK_LIB("libglog_static_d")
+#if defined(_WIN32) || defined(_WIN64) || defined(WIN32) || defined(WIN64)
+
+#ifdef _DEBUG
+#pragma comment(lib, "evpp_static_d.lib")
+#pragma comment(lib, "libglog_static_d.lib")
 #else
-H_LINK_LIB("evpp_static")
-H_LINK_LIB("libglog_static")
+#pragma comment(lib, "evpp_static.lib")
+#pragma comment(lib, "libglog_static.lib")
 #endif
 
-H_LINK_LIB("Ws2_32")
-H_LINK_LIB("libevent")
-H_LINK_LIB("libevent_core") // libevent2.0
-H_LINK_LIB("libevent_extras") // libevent2.0
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "libevent.lib")
+#pragma comment(lib, "libevent_core.lib") // libevent2.0
+#pragma comment(lib, "libevent_extras.lib") // libevent2.0
+
 #endif
-
-
-
-
